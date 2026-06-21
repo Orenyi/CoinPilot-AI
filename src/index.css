@@ -1,0 +1,135 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Space+Grotesk:wght@300..700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Fonts */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Poppins", sans-serif;
+
+  /* Brand */
+  --color-primary: #2563eb;
+  --color-primary-2: #7c3aed;
+  --color-primary-3: #9333ea;
+  --color-accent: #22d3ee;
+
+  /* Status */
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Dark mode */
+  --dark-bg: #020617;
+  --dark-bg-2: #07111f;
+  --dark-card: #0f172a;
+  --dark-card-2: #111827;
+  --dark-border: #1e293b;
+  --dark-text: #ffffff;
+  --dark-muted: #94a3b8;
+  --dark-soft: #cbd5e1;
+
+  /* Light mode */
+  --light-bg: #f8fafc;
+  --light-bg-2: #ffffff;
+  --light-card: #ffffff;
+  --light-card-2: #f1f5f9;
+  --light-border: #dfdfdf;
+  --light-text: #0f172a;
+  --light-muted: #64748b;
+  --light-soft: #334155;
+
+  /* Active app theme - dark default */
+  --app-bg: var(--dark-bg);
+  --app-bg-2: var(--dark-bg-2);
+  --app-card: var(--dark-card);
+  --app-card-2: var(--dark-card-2);
+  --app-border: var(--dark-border);
+  --app-text: var(--dark-text);
+  --app-muted: var(--dark-muted);
+  --app-soft: var(--dark-soft);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+  --gradient-secondary: linear-gradient(135deg, #06b6d4, #9333ea);
+  --gradient-card: linear-gradient(
+    145deg,
+    rgba(37, 99, 235, 0.18),
+    rgba(124, 58, 237, 0.12)
+  );
+
+  /* Shadows / Glow */
+  --shadow-card: 0 20px 50px rgba(15, 23, 42, 0.18);
+  --glow-blue: 0 0 40px rgba(37, 99, 235, 0.35);
+  --glow-purple: 0 0 40px rgba(124, 58, 237, 0.35);
+
+  /* Radius */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* Layout */
+  --container-width: 1350px;
+  --section-padding: 96px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  background: var(--app-bg);
+  color: var(--app-text);
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.light {
+  --app-bg: var(--light-bg);
+  --app-bg-2: var(--light-bg-2);
+  --app-card: var(--light-card);
+  --app-card-2: var(--light-card-2);
+  --app-border: var(--light-border);
+  --app-text: var(--light-text);
+  --app-muted: var(--light-muted);
+  --app-soft: var(--light-soft);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+.logo-dark {
+  display: block;
+}
+
+.logo-light {
+  display: none;
+}
+
+.light .logo-dark {
+  display: none;
+}
+
+.light .logo-light {
+  display: block;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+  color: #ffffff;
+}
