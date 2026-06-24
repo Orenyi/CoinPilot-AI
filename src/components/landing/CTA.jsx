@@ -12,78 +12,76 @@ const CTA = () => {
             rounded-3xl
             border
             border-[var(--app-border)]
-            bg-gradient-to-r
-            from-[#2563eb]
-            via-[#7c3aed]
-            to-[#9333ea]
-            p-6
-            shadow-[0_0_60px_rgba(124,58,237,0.18)]
-            sm:p-8
-            lg:p-10
+            bg-[var(--app-card)]
+            p-8
+            lg:p-12
           "
         >
-          {/* Background Glow */}
-          <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-black/10 blur-3xl" />
+          {/* Glow Effects */}
+          <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-[var(--color-primary)]/10 blur-[120px]" />
+          <div className="absolute right-0 bottom-0 h-64 w-64 rounded-full bg-[var(--color-primary-2)]/10 blur-[120px]" />
 
-          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            {/* Left */}
-            <div className="flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left">
-              <div
-                className="
-                  flex
-                  h-20
-                  w-20
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-white/10
-                  backdrop-blur-md
-                "
-              >
-                <span className="text-4xl">🚀</span>
-              </div>
-
-              <div>
-                <h2 className="[font-family:var(--font-heading)] text-3xl font-bold text-white">
-                  Start tracking crypto with AI today.
-                </h2>
-
-                <p className="mt-3 max-w-xl text-sm leading-7 text-white/80 sm:text-base">
-                  Join thousands of traders using CoinPilot AI to make smarter
-                  crypto decisions with real-time data, AI insights and
-                  portfolio tracking.
-                </p>
-              </div>
+          <div className="relative text-center">
+            <div className="mb-4 inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-bg)] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-2)]">
+              Start Your Journey
             </div>
 
-            {/* Right */}
-            <div className="flex flex-col items-center gap-4">
+            <h2 className="[font-family:var(--font-heading)] mx-auto max-w-3xl text-3xl font-bold text-[var(--app-text)] sm:text-4xl lg:text-5xl">
+              Trade smarter with AI-powered crypto insights
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[var(--app-soft)] sm:text-lg">
+              Track markets, manage your portfolio, discover opportunities, and
+              get AI-powered analysis — all in one platform.
+            </p>
+
+            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
               <button
                 className="
                   flex
                   items-center
+                  justify-center
                   gap-2
                   rounded-2xl
-                  bg-white
+                  bg-gradient-to-r
+                  from-[#2563eb]
+                  via-[#7c3aed]
+                  to-[#9333ea]
                   px-8
                   py-4
                   font-semibold
-                  text-[#7c3aed]
+                  text-white
                   transition-all
                   duration-300
                   hover:-translate-y-1
-                  hover:shadow-xl
+                  hover:shadow-[0_0_30px_rgba(124,58,237,0.35)]
                 "
               >
                 Create Free Account
                 <FiArrowRight />
               </button>
 
-              <div className="flex items-center gap-2 text-sm text-white/80">
-                <FiCheckCircle />
-                No credit card required
-              </div>
+              <button
+                className="
+                  rounded-2xl
+                  border
+                  border-[var(--app-border)]
+                  px-8
+                  py-4
+                  font-semibold
+                  text-[var(--app-text)]
+                  transition-all
+                  duration-300
+                  hover:border-[var(--color-primary-2)]
+                "
+              >
+                Explore Markets
+              </button>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-[var(--app-muted)]">
+              <FiCheckCircle className="text-[var(--color-success)]" />
+              No credit card required
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import MarketPreview from "../components/landing/MarketPreview";
 import Features from "../components/landing/Features";
 import CTA from "../components/landing/CTA";
 import HowItWorks from "../components/landing/HowItWorks";
+import Footer from "../components/layout/Footer";
 
 const LandingPage = () => {
   return (
@@ -13,6 +14,7 @@ const LandingPage = () => {
       <Features />
       <HowItWorks />
       <CTA />
+      <Footer />
     </main>
   );
 };
