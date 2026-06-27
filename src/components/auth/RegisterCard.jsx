@@ -2,11 +2,11 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 
-import LoginForm from "./LoginForm";
 import { signInWithGoogle } from "../../services/authService";
+import RegisterForm from "./RegisterForm";
 
-const LoginCard = () => {
-  const handleGoogleLogin = async () => {
+const RegisterCard = () => {
+  const handleGoogleRegister = async () => {
     try {
       await signInWithGoogle();
     } catch (error) {
@@ -15,12 +15,7 @@ const LoginCard = () => {
   };
 
   return (
-    <div
-      className="
-        relative
-
-      "
-    >
+    <div className="relative">
       {/* Logo */}
 
       <div className="relative z-10 flex justify-center">
@@ -52,15 +47,16 @@ const LoginCard = () => {
 
       <div className="mt-8 text-center">
         <h1 className="[font-family:var(--font-heading)] text-4xl font-bold text-[var(--app-text)]">
-          Welcome Back
+          Create Account
         </h1>
 
         <p className="mt-3 text-[15px] leading-7 text-[var(--app-soft)]">
-          Sign in to continue to
+          Join
           <span className="font-semibold text-[var(--app-text)]">
             {" "}
             CoinPilot AI
-          </span>
+          </span>{" "}
+          and start tracking the crypto market smarter.
         </p>
       </div>
 
@@ -68,9 +64,9 @@ const LoginCard = () => {
 
       <button
         type="button"
-        onClick={handleGoogleLogin}
+        onClick={handleGoogleRegister}
         className="
-          mt-10
+          mt-8
           flex
           w-full
           items-center
@@ -80,7 +76,7 @@ const LoginCard = () => {
           border
           border-[var(--app-border)]
           bg-[var(--app-bg)]
-          py-4
+          py-3.5
           font-medium
           text-[var(--app-text)]
           transition-all
@@ -96,7 +92,7 @@ const LoginCard = () => {
 
       {/* Divider */}
 
-      <div className="my-8 flex items-center gap-4">
+      <div className="my-6 flex items-center gap-4">
         <div className="h-px flex-1 bg-[var(--app-border)]" />
 
         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-muted)]">
@@ -106,16 +102,16 @@ const LoginCard = () => {
         <div className="h-px flex-1 bg-[var(--app-border)]" />
       </div>
 
-      {/* Login Form */}
+      {/* Register Form */}
 
-      <LoginForm />
+      <RegisterForm />
 
       {/* Footer */}
 
-      <div className="mt-8 text-center text-sm text-[var(--app-soft)]">
-        Don't have an account?{" "}
+      <div className="mt-6 text-center text-sm text-[var(--app-soft)]">
+        Already have an account?{" "}
         <NavLink
-          to="/register"
+          to="/login"
           className="
             font-semibold
             text-[var(--color-primary-2)]
@@ -123,11 +119,11 @@ const LoginCard = () => {
             hover:text-[#9333ea]
           "
         >
-          Create Account
+          Sign In
         </NavLink>
       </div>
     </div>
   );
 };
 
-export default LoginCard;
+export default RegisterCard;

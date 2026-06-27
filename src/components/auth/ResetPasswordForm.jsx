@@ -1,21 +1,21 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 
-import { signIn } from "../../services/authService";
-import toast from "react-hot-toast";
+import { updatePassword } from "../../services/authService";
 
-const LoginForm = () => {
+const ResetPasswordForm = () => {
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: "",
     password: "",
+    confirmPassword: "",
   });
-
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -27,19 +27,25 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill in all fields.");
-      return;
+    if (!formData.password || !formData.confirmPassword) {
+      return toast.error("Please fill in all fields.");
+    }
+
+    if (formData.password.length < 8) {
+      return toast.error("Password must be at least 8 characters.");
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return toast.error("Passwords do not match.");
     }
 
     try {
       setLoading(true);
 
-      await signIn(formData);
+      await updatePassword(formData.password);
 
-      toast.success("Welcome back!");
-
-      navigate("/dashboard");
+      toast.success("Password updated successfully.");
+      navigate("/login");
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -49,56 +55,11 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Email */}
+      {/* New Password */}
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--app-text)]">
-          Email Address
-        </label>
-
-        <div
-          className="
-            group
-            flex
-            items-center
-            gap-3
-            rounded-xl
-            border
-            border-[var(--app-border)]
-            bg-[var(--app-bg)]
-            px-4
-            py-3.5
-            transition-all
-            duration-300
-            focus-within:border-[var(--color-primary-2)]
-            focus-within:shadow-[0_0_0_4px_rgba(124,58,237,0.08)]
-          "
-        >
-          <FiMail className="text-base text-[var(--app-muted)] transition group-focus-within:text-[var(--color-primary-2)]" />
-
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            className="
-              w-full
-              bg-transparent
-              text-[15px]
-              text-[var(--app-text)]
-              placeholder:text-[var(--app-muted)]
-              outline-none
-            "
-          />
-        </div>
-      </div>
-
-      {/* Password */}
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--app-text)]">
-          Password
+          New Password
         </label>
 
         <div
@@ -140,33 +101,67 @@ const LoginForm = () => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="text-[var(--app-muted)] transition hover:text-[var(--app-text)]"
+            className="text-[var(--app-muted)] hover:text-[var(--app-text)]"
           >
             {showPassword ? <FiEyeOff size={17} /> : <FiEye size={17} />}
           </button>
         </div>
       </div>
 
-      {/* Remember & Forgot */}
+      {/* Confirm Password */}
 
-      <div className="flex items-center justify-between pt-1">
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--app-soft)]">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-[var(--color-primary-2)]"
-          />
-          Remember me
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-[var(--app-text)]">
+          Confirm Password
         </label>
 
-        <NavLink
-          to="/forgot-password"
-          className="text-sm font-medium text-[var(--color-primary-2)] hover:underline"
+        <div
+          className="
+            group
+            flex
+            items-center
+            gap-3
+            rounded-xl
+            border
+            border-[var(--app-border)]
+            bg-[var(--app-bg)]
+            px-4
+            py-3.5
+            transition-all
+            duration-300
+            focus-within:border-[var(--color-primary-2)]
+            focus-within:shadow-[0_0_0_4px_rgba(124,58,237,0.08)]
+          "
         >
-          Forgot Password?
-        </NavLink>
+          <FiLock className="text-base text-[var(--app-muted)] transition group-focus-within:text-[var(--color-primary-2)]" />
+
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="••••••••"
+            className="
+              w-full
+              bg-transparent
+              text-[15px]
+              text-[var(--app-text)]
+              placeholder:text-[var(--app-muted)]
+              outline-none
+            "
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="text-[var(--app-muted)] hover:text-[var(--app-text)]"
+          >
+            {showConfirmPassword ? <FiEyeOff size={17} /> : <FiEye size={17} />}
+          </button>
+        </div>
       </div>
 
-      {/* Login */}
+      {/* Submit */}
 
       <button
         type="submit"
@@ -194,7 +189,7 @@ const LoginForm = () => {
           disabled:opacity-70
         "
       >
-        {loading ? "Signing in..." : "Login"}
+        {loading ? "Updating..." : "Update Password"}
 
         {!loading && (
           <FiArrowRight className="transition group-hover:translate-x-1" />
@@ -204,4 +199,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default ResetPasswordForm;

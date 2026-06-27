@@ -39,14 +39,17 @@ const Navbar = () => {
 
           <div className="hidden items-center gap-3 lg:flex">
             <ThemeToggle />
+            <NavLink to="/login">
+              <button className="rounded-xl border border-[var(--app-border)] px-7 py-3 text-sm font-medium text-[var(--app-text)] transition hover:border-[var(--color-primary-2)] hover:shadow-[var(--glow-purple)]">
+                Log In
+              </button>
+            </NavLink>
 
-            <button className="rounded-xl border border-[var(--app-border)] px-7 py-3 text-sm font-medium text-[var(--app-text)] transition hover:border-[var(--color-primary-2)] hover:shadow-[var(--glow-purple)]">
-              Log In
-            </button>
-
-            <button className="rounded-xl bg-gradient-to-r from-[#2563eb] via-[#7c3aed] to-[#9333ea] px-7 py-3 text-sm font-medium text-white shadow-[0_0_28px_rgba(124,58,237,0.35)] transition hover:-translate-y-0.5">
-              Get Started
-            </button>
+            <NavLink to="/register">
+              <button className="rounded-xl bg-gradient-to-r from-[#2563eb] via-[#7c3aed] to-[#9333ea] px-7 py-3 text-sm font-medium text-white shadow-[0_0_28px_rgba(124,58,237,0.35)] transition hover:-translate-y-0.5">
+                Get Started
+              </button>
+            </NavLink>
           </div>
 
           <div className="flex items-center gap-3 lg:hidden">

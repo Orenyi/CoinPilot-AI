@@ -1,5 +1,5 @@
 export const navLinks = [
-  { name: "Markets", path: "/markets" },
+  { name: "Dashboard", path: "/dashboard" },
   { name: "Watchlist", path: "/watchlist" },
   { name: "Portfolio", path: "/portfolio" },
   { name: "AI Assistant", path: "/ai-assistant" },
