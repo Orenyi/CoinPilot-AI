@@ -5,10 +5,12 @@ import App from "./App.jsx";
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
+import { SidebarProvider } from "./context/SidebarContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
+      <SidebarProvider>
       <BrowserRouter>
         <App />
 
@@ -41,6 +43,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           }}
         />
       </BrowserRouter>
+      </SidebarProvider>
     </AuthProvider>
   </React.StrictMode>,
 );

@@ -8,27 +8,31 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import DashboardPage from "./pages/DashboardPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
-// Temporary Dashboard
-const Dashboard = () => (
-  <div className="flex h-screen items-center justify-center bg-[var(--app-bg)] text-3xl font-bold text-[var(--app-text)]">
-    Dashboard 🚀
-  </div>
-);
 
 const App = () => {
   const location = useLocation();
 
-  const authPages = [
+  const hideNavbarRoutes = [
     "/login",
     "/register",
     "/forgot-password",
     "/reset-password",
+    "/dashboard",
+    "/markets",
+    "/watchlist",
+    "/portfolio",
+    "/ai-assistant",
+    "/news",
+    "/alerts",
+    "/settings",
   ];
 
-  const hideNavbar = authPages.includes(location.pathname);
+  const hideNavbar = hideNavbarRoutes.some((route) =>
+    location.pathname.startsWith(route),
+  );
 
   return (
     <>
@@ -45,7 +49,7 @@ const App = () => {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
 
         {/* 404 */}
