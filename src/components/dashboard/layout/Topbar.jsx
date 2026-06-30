@@ -10,7 +10,7 @@ const Topbar = () => {
 
       <div className="min-w-0">
         <h1 className="truncate font-[var(--font-heading)] text-2xl font-bold text-[var(--app-text)] lg:text-[30px]">
-          Market Dashboard
+          Dashboard
         </h1>
 
         <p className="mt-1 hidden text-sm text-[var(--app-soft)] sm:block">

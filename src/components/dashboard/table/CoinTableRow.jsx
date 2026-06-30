@@ -4,6 +4,7 @@ import { FiArrowRight, FiStar } from "react-icons/fi";
 import Sparkline from "../charts/Sparkline";
 
 const CoinTableRow = ({
+  index,
   image,
   name,
   symbol,
@@ -23,6 +24,11 @@ const CoinTableRow = ({
         hover:bg-[var(--app-bg)]
       "
     >
+      {/* Number */}
+
+      <td className="px-5 py-4 text-sm font-medium text-[var(--app-soft)]">
+        {index}
+      </td>
       {/* Coin */}
 
       <td className="px-5 py-4">
