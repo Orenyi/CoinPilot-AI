@@ -16,6 +16,15 @@ import Sparkline from "../components/dashboard/charts/Sparkline";
 
 import useCoins from "../hooks/useCoins";
 
+// ---------- loading imports ----------------------
+import LoadingCard from "../components/dashboard/common/LoadingCard";
+import LoadingTable from "../components/dashboard/common/LoadingTable";
+import LoadingTrending from "../components/dashboard/common/LoadingTrending";
+
+import ErrorState from "../components/dashboard/common/ErrorState";
+import { Link } from "react-router-dom";
+import { FiArrowRight } from "react-icons/fi";
+
 const formatCurrency = (value) => {
   if (!value) return "--";
 
@@ -41,7 +50,15 @@ const formatPercentage = (value) => {
 };
 
 const DashboardPage = () => {
-  const { globalMarket, coins, trendingCoins, loading, error } = useCoins();
+  const {
+    globalMarket,
+    coins,
+    trendingCoins,
+    loading,
+    error,
+    refreshing,
+    refresh,
+  } = useCoins();
 
   // Temporary chart until live chart data is added
   const chartData = [
@@ -98,29 +115,49 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex h-[60vh] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--app-border)] border-t-[var(--color-primary-2)]" />
-        </div>
+      <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
+        {/* Market Stats */}
+
+        <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {[...Array(4)].map((_, index) => (
+            <LoadingCard key={index} />
+          ))}
+        </section>
+
+        {/* Coin Table */}
+
+        <section className="mt-6">
+          <LoadingTable />
+        </section>
+
+        {/* Trending Coins */}
+
+        <section className="mt-8">
+          <div className="mb-5">
+            <div className="h-7 w-48 animate-pulse rounded bg-[var(--app-bg)]" />
+
+            <div className="mt-3 h-4 w-72 animate-pulse rounded bg-[var(--app-bg)]" />
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {[...Array(5)].map((_, index) => (
+              <LoadingTrending key={index} />
+            ))}
+          </div>
+        </section>
       </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout>
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-          <h2 className="text-xl font-bold text-red-500">
-            Failed to load market data
-          </h2>
-
-          <p className="mt-2 text-[var(--app-soft)]">{error}</p>
-        </div>
+      <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
+        <ErrorState title="Failed to load market data" message={error} />
       </DashboardLayout>
     );
   }
   return (
-    <DashboardLayout>
+    <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
       {/* ================= Market Stats ================= */}
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -159,7 +196,7 @@ const DashboardPage = () => {
         <MarketStatCard
           icon={<FiTrendingUp className="text-amber-500" />}
           title="Trending Coins"
-          value={globalMarket?.active_cryptocurrencies?.toLocaleString()}
+          value={trendingCoins.length}
           change={`${trendingCoins.length} Coins`}
           positive
           chart={<Sparkline data={chartData} positive />}
@@ -169,7 +206,34 @@ const DashboardPage = () => {
       {/* ================= Coin Table ================= */}
 
       <section className="mt-6">
-        <CoinTable coins={mappedCoins} />
+        <CoinTable coins={mappedCoins.slice(0, 10)} />
+
+        <div className="mt-6 flex justify-center">
+          <Link
+            to="/markets"
+            className="
+        inline-flex
+        items-center
+        gap-2
+        rounded-xl
+        border
+        border-[var(--app-border)]
+        bg-[var(--app-surface)]
+        px-5
+        py-3
+        text-sm
+        font-semibold
+        text-[var(--app-text)]
+        transition-all
+        duration-300
+        hover:border-[var(--color-primary-2)]
+        hover:text-[var(--color-primary-2)]
+      "
+          >
+            View All Markets
+            <FiArrowRight />
+          </Link>
+        </div>
       </section>
       {/* ================= Trending Coins ================= */}
 
@@ -187,9 +251,35 @@ const DashboardPage = () => {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {mappedTrendingCoins.map((coin) => (
+          {mappedTrendingCoins.slice(0, 5).map((coin) => (
             <TrendingCoinsCard key={coin.id} {...coin} />
           ))}
+        </div>
+        <div className="mt-6 flex justify-center">
+          <Link
+            to="/markets?filter=trending"
+            className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-xl
+      border
+      border-[var(--app-border)]
+      bg-[var(--app-surface)]
+      px-5
+      py-3
+      text-sm
+      font-semibold
+      text-[var(--app-text)]
+      transition-all
+      duration-300
+      hover:border-[var(--color-primary-2)]
+      hover:text-[var(--color-primary-2)]
+    "
+          >
+            View All Trending
+            <FiArrowRight />
+          </Link>
         </div>
       </section>
     </DashboardLayout>

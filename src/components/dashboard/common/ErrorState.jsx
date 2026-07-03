@@ -1,18 +1,16 @@
 import React from "react";
-import { FiInbox } from "react-icons/fi";
+import { FiAlertTriangle, FiRefreshCw } from "react-icons/fi";
 
-const EmptyState = ({
-  title = "Nothing here yet",
-  message = "There's currently no data available.",
-  buttonText,
-  onAction,
-  icon,
+const ErrorState = ({
+  title = "Unable to load data",
+  message = "Something went wrong while fetching the latest market data.",
+  onRetry,
 }) => {
   return (
     <section
       className="
         flex
-        min-h-[50vh]
+        min-h-[60vh]
         items-center
         justify-center
       "
@@ -23,7 +21,7 @@ const EmptyState = ({
           max-w-lg
           rounded-3xl
           border
-          border-[var(--app-border)]
+          border-red-500/20
           bg-[var(--app-surface)]
           p-8
           text-center
@@ -41,11 +39,11 @@ const EmptyState = ({
             items-center
             justify-center
             rounded-full
-            bg-[var(--app-bg)]
-            text-[var(--color-primary-2)]
+            bg-red-500/10
+            text-red-500
           "
         >
-          {icon || <FiInbox size={38} />}
+          <FiAlertTriangle size={38} />
         </div>
 
         {/* Title */}
@@ -58,16 +56,16 @@ const EmptyState = ({
 
         <p className="mt-3 leading-7 text-[var(--app-soft)]">{message}</p>
 
-        {/* Optional Button */}
+        {/* Retry */}
 
-        {buttonText && onAction && (
+        {onRetry && (
           <button
-            onClick={onAction}
+            onClick={onRetry}
             className="
               mt-8
               inline-flex
               items-center
-              justify-center
+              gap-2
               rounded-xl
               bg-gradient-to-r
               from-[#2563eb]
@@ -83,7 +81,8 @@ const EmptyState = ({
               hover:shadow-[0_14px_30px_rgba(124,58,237,0.30)]
             "
           >
-            {buttonText}
+            <FiRefreshCw size={18} />
+            Retry
           </button>
         )}
       </div>
@@ -91,4 +90,4 @@ const EmptyState = ({
   );
 };
 
-export default EmptyState;
+export default ErrorState;

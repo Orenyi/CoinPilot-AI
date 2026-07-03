@@ -3,7 +3,7 @@ import { FiSearch, FiBell, FiRefreshCw, FiChevronDown } from "react-icons/fi";
 
 import ThemeToggle from "../../layout/ThemeToggle";
 
-const Topbar = () => {
+const Topbar = ({ onRefresh, refreshing }) => {
   return (
     <div className="flex h-[77px] items-center justify-between px-4 sm:px-6 lg:px-8">
       {/* Left */}
@@ -76,22 +76,26 @@ const Topbar = () => {
         {/* Refresh */}
 
         <button
+          onClick={onRefresh}
+          disabled={refreshing}
           className="
-            flex
-            h-11
-            w-11
-            items-center
-            justify-center
-            rounded-xl
-            border
-            border-[var(--app-border)]
-            bg-[var(--app-surface)]
-            text-[var(--app-text)]
-            transition
-            hover:border-[var(--color-primary-2)]
-          "
+    flex
+    h-11
+    w-11
+    items-center
+    justify-center
+    rounded-xl
+    border
+    border-[var(--app-border)]
+    bg-[var(--app-surface)]
+    text-[var(--app-text)]
+    transition
+    hover:border-[var(--color-primary-2)]
+    disabled:cursor-not-allowed
+    disabled:opacity-60
+  "
         >
-          <FiRefreshCw size={18} />
+          <FiRefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
         </button>
       </div>
     </div>
