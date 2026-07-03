@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FiBarChart2, FiDatabase, FiLock, FiZap, FiSend } from "react-icons/fi";
+import useCoins from "../../hooks/useCoins";
 
 const ranges = {
   "1H": "1",
@@ -16,33 +17,7 @@ const Hero = () => {
   const [chartPoints, setChartPoints] = useState(fallbackChartData);
   const [loadingChart, setLoadingChart] = useState(false);
 
-  const [btc, setBtc] = useState({
-    price: 67892.44,
-    change: 2.45,
-  });
-
-  useEffect(() => {
-    const getBTC = async () => {
-      try {
-        const res = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-        );
-
-        const data = await res.json();
-
-        if (data?.bitcoin) {
-          setBtc({
-            price: data.bitcoin.usd,
-            change: data.bitcoin.usd_24h_change,
-          });
-        }
-      } catch (error) {
-        console.log("Using fallback BTC price data");
-      }
-    };
-
-    getBTC();
-  }, []);
+  const { coins } = useCoins();
 
   useEffect(() => {
     const getChartData = async () => {
@@ -75,6 +50,13 @@ const Hero = () => {
 
     getChartData();
   }, [activeRange]);
+
+  const bitcoin = coins.find((coin) => coin.id === "bitcoin");
+
+  const btc = {
+    price: bitcoin?.current_price ?? 67892.44,
+    change: bitcoin?.price_change_percentage_24h ?? 2.45,
+  };
 
   const max = Math.max(...chartPoints);
   const min = Math.min(...chartPoints);
