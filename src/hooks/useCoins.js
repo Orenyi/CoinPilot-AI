@@ -6,11 +6,26 @@ const useCoins = () => {
   const [globalMarket, setGlobalMarket] = useState(null);
   const [coins, setCoins] = useState([]);
   const [trendingCoins, setTrendingCoins] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const intervalRef = useRef(null);
+
+  // ---------------- Markets State ----------------
+
+  const [search, setSearch] = useState("");
+
+  const [filter, setFilter] = useState("all");
+
+  const [category, setCategory] = useState("all");
+
+  const [sort, setSort] = useState("market_cap_desc");
+
+  const [page, setPage] = useState(1);
+
+  const [perPage] = useState(50);
 
   const fetchMarketData = useCallback(async (showLoader = true) => {
     const startTime = Date.now();
@@ -29,6 +44,7 @@ const useCoins = () => {
       setGlobalMarket(data.global);
       setCoins(data.coins);
       setTrendingCoins(data.trending ?? []);
+      setCategories(data.categories ?? []);
     } catch (err) {
       console.error(err);
 
@@ -103,7 +119,27 @@ const useCoins = () => {
     refreshing,
     error,
 
-    refresh,
+    refresh: () => fetchMarketData(false),
+
+    search,
+    setSearch,
+
+    filter,
+    setFilter,
+
+    category,
+    setCategory,
+
+    sort,
+    setSort,
+
+    page,
+    setPage,
+
+    perPage,
+
+    categories,
+    setCategories,
   };
 };
 

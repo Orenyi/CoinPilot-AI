@@ -3,21 +3,22 @@ import { FiSearch, FiBell, FiRefreshCw, FiChevronDown } from "react-icons/fi";
 
 import ThemeToggle from "../../layout/ThemeToggle";
 
-const Topbar = ({ onRefresh, refreshing }) => {
+const Topbar = ({ title, subtitle, onRefresh, refreshing }) => {
   return (
     <div className="flex h-[77px] items-center justify-between px-4 sm:px-6 lg:px-8">
       {/* Left */}
 
       <div className="min-w-0">
         <h1 className="truncate font-[var(--font-heading)] text-2xl font-bold text-[var(--app-text)] lg:text-[30px]">
-          Dashboard
+          {title}
         </h1>
 
-        <p className="mt-1 hidden text-sm text-[var(--app-soft)] sm:block">
-          Track live cryptocurrency prices and market movements.
-        </p>
+        {subtitle && (
+          <p className="mt-1 hidden text-sm text-[var(--app-soft)] sm:block">
+            {subtitle}
+          </p>
+        )}
       </div>
-
       {/* Right */}
 
       <div className="flex items-center gap-2 sm:gap-3">

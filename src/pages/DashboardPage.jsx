@@ -115,7 +115,12 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
+      <DashboardLayout
+        title="Dashboard"
+        subtitle="Track live cryptocurrency prices and market movements."
+        onRefresh={refresh}
+        refreshing={refreshing}
+      >
         {/* Market Stats */}
 
         <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -151,13 +156,23 @@ const DashboardPage = () => {
 
   if (error) {
     return (
-      <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
+      <DashboardLayout
+        title="Dashboard"
+        subtitle="Track live cryptocurrency prices and market movements."
+        onRefresh={refresh}
+        refreshing={refreshing}
+      >
         <ErrorState title="Failed to load market data" message={error} />
       </DashboardLayout>
     );
   }
   return (
-    <DashboardLayout onRefresh={refresh} refreshing={refreshing}>
+    <DashboardLayout
+      title="Dashboard"
+      subtitle="Track live cryptocurrency prices and market movements."
+      onRefresh={refresh}
+      refreshing={refreshing}
+    >
       {/* ================= Market Stats ================= */}
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">

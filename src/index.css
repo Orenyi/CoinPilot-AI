@@ -133,3 +133,14 @@ button {
   background: rgba(124, 58, 237, 0.35);
   color: #ffffff;
 }
+
+/* Hide Horizontal Scrollbars  */
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
+import MarketsPage from "./pages/MarketsPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -50,6 +51,9 @@ const App = () => {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/markets" element={<MarketsPage />} />
         </Route>
 
         {/* 404 */}

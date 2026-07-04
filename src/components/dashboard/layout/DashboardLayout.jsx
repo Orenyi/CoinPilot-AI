@@ -6,7 +6,13 @@ import BottomNavbar from "./BottomNavbar";
 
 import useSidebar from "../../../hooks/useSidebar";
 
-const DashboardLayout = ({ children, onRefresh, refreshing }) => {
+const DashboardLayout = ({
+  children,
+  title,
+  subtitle,
+  onRefresh,
+  refreshing,
+}) => {
   const { collapsed } = useSidebar();
 
   return (
@@ -47,7 +53,12 @@ const DashboardLayout = ({ children, onRefresh, refreshing }) => {
               backdrop-blur-xl
             "
           >
-            <Topbar onRefresh={onRefresh} refreshing={refreshing} />
+            <Topbar
+              title={title}
+              subtitle={subtitle}
+              onRefresh={onRefresh}
+              refreshing={refreshing}
+            />
           </header>
 
           {/* Page */}
