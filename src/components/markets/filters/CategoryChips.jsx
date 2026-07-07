@@ -11,65 +11,35 @@ import {
   FiHexagon,
 } from "react-icons/fi";
 
-const categories = [
-  {
-    id: "all",
-    label: "All",
-    icon: FiGlobe,
-  },
-  {
-    id: "ai",
-    label: "AI",
-    icon: FiCpu,
-  },
-  {
-    id: "layer-1",
-    label: "Layer 1",
-    icon: FiLayers,
-  },
-  {
-    id: "layer-2",
-    label: "Layer 2",
-    icon: FiLayers,
-  },
-  {
-    id: "defi",
-    label: "DeFi",
-    icon: FiShield,
-  },
-  {
-    id: "gaming",
-    label: "Gaming",
-    icon: FiPlay,
-  },
-  {
-    id: "meme",
-    label: "Meme",
-    icon: FiSmile,
-  },
-  {
-    id: "rwa",
-    label: "RWA",
-    icon: FiDatabase,
-  },
-  {
-    id: "stablecoins",
-    label: "Stablecoins",
-    icon: FiBox,
-  },
-  {
-    id: "exchange",
-    label: "Exchange",
-    icon: FiHexagon,
-  },
-  {
-    id: "nft",
-    label: "NFT",
-    icon: FiBox,
-  },
-];
+const iconMap = {
+  all: FiGlobe,
+  "artificial-intelligence": FiCpu,
+  "layer-1": FiLayers,
+  "layer-2": FiLayers,
+  "decentralized-finance-defi": FiShield,
+  gaming: FiPlay,
+  "meme-token": FiSmile,
+  "real-world-assets-rwa": FiDatabase,
+  stablecoins: FiBox,
+  "centralized-exchange-token-cex": FiHexagon,
+  exchange: FiHexagon,
+  "non-fungible-tokens-nft": FiBox,
+};
 
-const CategoryChips = ({ activeCategory = "all", onChange }) => {
+const CategoryChips = ({
+  categories = [],
+  activeCategory = "all",
+  onChange,
+}) => {
+  const chips = [
+    {
+      id: "all",
+      name: "All",
+      icon: FiGlobe,
+    },
+    ...categories,
+  ];
+
   return (
     <section
       className="hide-scrollbar
@@ -80,7 +50,8 @@ const CategoryChips = ({ activeCategory = "all", onChange }) => {
     scroll-smooth"
     >
       <div className="flex min-w-max gap-3 lg:flex-wrap">
-        {categories.map(({ id, label, icon: Icon }) => {
+        {chips.map(({ id, name }) => {
+          const Icon = iconMap[id] || FiGlobe;
           const active = activeCategory === id;
 
           return (
@@ -108,7 +79,7 @@ const CategoryChips = ({ activeCategory = "all", onChange }) => {
               `}
             >
               <Icon size={16} />
-              {label}
+              {name}
             </button>
           );
         })}

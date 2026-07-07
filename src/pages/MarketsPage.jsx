@@ -41,6 +41,7 @@ const MarketsPage = () => {
     setPage,
 
     categories,
+    pagination,
   } = useCoins();
 
   const filteredCoins = coins.filter((coin) => {
@@ -89,6 +90,36 @@ const MarketsPage = () => {
     }
   });
 
+  const displayedCoins = (() => {
+    switch (filter) {
+      case "trending":
+        return trendingCoins;
+
+      case "gainers":
+        return [...sortedCoins].sort(
+          (a, b) =>
+            b.price_change_percentage_24h - a.price_change_percentage_24h,
+        );
+
+      case "losers":
+        return [...sortedCoins].sort(
+          (a, b) =>
+            a.price_change_percentage_24h - b.price_change_percentage_24h,
+        );
+
+      case "new":
+        return [...sortedCoins].sort(
+          (a, b) => b.market_cap_rank - a.market_cap_rank,
+        );
+
+      case "watchlist":
+        return []; // placeholder
+
+      default:
+        return sortedCoins;
+    }
+  })();
+
   return (
     <DashboardLayout
       title="Markets"
@@ -114,7 +145,7 @@ const MarketsPage = () => {
       {/* ================= Filter Tabs ================= */}
 
       <section className="mt-6">
-        <FilterTabs active={filter} onChange={setFilter} />
+        <FilterTabs activeTab={filter} onChange={setFilter} />
       </section>
 
       {/* ================= Categories ================= */}
@@ -122,8 +153,8 @@ const MarketsPage = () => {
       <section className="mt-5">
         <CategoryChips
           categories={categories}
-          selected={category}
-          onSelect={setCategory}
+          activeCategory={category}
+          onChange={setCategory}
         />
       </section>
 
@@ -136,20 +167,24 @@ const MarketsPage = () => {
       {/* ================= Table ================= */}
 
       <section className="mt-6">
-        {sortedCoins.length === 0 ? (
+        {displayedCoins.length === 0 ? (
           <EmptyMarkets
             title="No cryptocurrencies found"
             message="Try another search or filter."
           />
         ) : (
-          <MarketsTable coins={sortedCoins} loading={loading} />
+          <MarketsTable coins={displayedCoins} loading={loading} />
         )}
       </section>
 
       {/* ================= Pagination ================= */}
 
       <section className="mt-8">
-        <Pagination currentPage={page} totalPages={10} onPageChange={setPage} />
+        <Pagination
+          currentPage={pagination?.page ?? 1}
+          totalPages={pagination?.totalPages ?? 1}
+          onPageChange={setPage}
+        />
       </section>
     </DashboardLayout>
   );

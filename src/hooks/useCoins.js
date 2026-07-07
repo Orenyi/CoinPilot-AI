@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getMarketData } from "../services/coinGeckoService";
+import useDebounce from "./useDebounce";
 
 const useCoins = () => {
   const [globalMarket, setGlobalMarket] = useState(null);
   const [coins, setCoins] = useState([]);
   const [trendingCoins, setTrendingCoins] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [pagination, setPagination] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -16,6 +18,8 @@ const useCoins = () => {
   // ---------------- Markets State ----------------
 
   const [search, setSearch] = useState("");
+
+  const debouncedSearch = useDebounce(search, 400);
 
   const [filter, setFilter] = useState("all");
 
@@ -27,52 +31,61 @@ const useCoins = () => {
 
   const [perPage] = useState(50);
 
-  const fetchMarketData = useCallback(async (showLoader = true) => {
-    const startTime = Date.now();
+  const fetchMarketData = useCallback(
+    async (showLoader = true) => {
+      const startTime = Date.now();
 
-    try {
-      if (showLoader) {
-        setLoading(true);
-      } else {
-        setRefreshing(true);
+      try {
+        if (showLoader) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+
+        setError(null);
+
+        const data = await getMarketData({
+          search: debouncedSearch,
+          category,
+          sort,
+          page,
+          perPage,
+        });
+
+        setGlobalMarket(data.global);
+        setCoins(data.coins);
+        setTrendingCoins(data.trending ?? []);
+        setCategories(data.categories ?? []);
+        setPagination(data.pagination);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to load market data.");
+      } finally {
+        const elapsed = Date.now() - startTime;
+
+        if (elapsed < 500) {
+          await new Promise((resolve) => setTimeout(resolve, 500 - elapsed));
+        }
+
+        if (showLoader) {
+          setLoading(false);
+        } else {
+          setRefreshing(false);
+        }
       }
-
-      setError(null);
-
-      const data = await getMarketData();
-
-      setGlobalMarket(data.global);
-      setCoins(data.coins);
-      setTrendingCoins(data.trending ?? []);
-      setCategories(data.categories ?? []);
-    } catch (err) {
-      console.error(err);
-
-      setError(err.message || "Failed to load market data.");
-    } finally {
-      // Keep the spinner visible for at least 500ms
-      const elapsed = Date.now() - startTime;
-
-      if (elapsed < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - elapsed));
-      }
-
-      if (showLoader) {
-        setLoading(false);
-      } else {
-        setRefreshing(false);
-      }
-    }
-  }, []);
+    },
+    [debouncedSearch, category, sort, page, perPage],
+  );
 
   const refresh = useCallback(() => {
     fetchMarketData(false);
   }, [fetchMarketData]);
 
   useEffect(() => {
-    // Initial fetch
     fetchMarketData(true);
+  }, [fetchMarketData]);
 
+  useEffect(() => {
     const startAutoRefresh = () => {
       if (intervalRef.current) return;
 
@@ -80,7 +93,7 @@ const useCoins = () => {
         if (!document.hidden) {
           fetchMarketData(false);
         }
-      }, 60000); // 60 seconds
+      }, 60000);
     };
 
     const stopAutoRefresh = () => {
@@ -140,6 +153,7 @@ const useCoins = () => {
 
     categories,
     setCategories,
+    pagination,
   };
 };
 

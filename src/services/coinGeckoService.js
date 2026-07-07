@@ -1,12 +1,25 @@
 import { supabase } from "./supabase";
 
 /**
- * Fetch all dashboard market data
- * via the Supabase Edge Function.
+ * Fetch market data via the Supabase Edge Function.
  */
 
-export const getMarketData = async () => {
-  const { data, error } = await supabase.functions.invoke("coin-market-data");
+export const getMarketData = async ({
+  search = "",
+  category = "",
+  sort = "market_cap_desc",
+  page = 1,
+  perPage = 50,
+} = {}) => {
+  const { data, error } = await supabase.functions.invoke("coin-market-data", {
+    body: {
+      search,
+      category,
+      sort,
+      page,
+      perPage,
+    },
+  });
 
   if (error) {
     console.error(error);
