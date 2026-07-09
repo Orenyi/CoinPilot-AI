@@ -11,6 +11,7 @@ const MarketsTable = ({
   loading = false,
   onCoinClick,
   onWatchlistToggle,
+  isInWatchlist,
 }) => {
   if (loading) {
     return <LoadingMarkets />;
@@ -90,6 +91,7 @@ const MarketsTable = ({
                   index={index}
                   onCoinClick={onCoinClick}
                   onWatchlistToggle={onWatchlistToggle}
+                  isInWatchlist={isInWatchlist}
                 />
               ))}
             </tbody>
@@ -107,6 +109,7 @@ const MarketsTable = ({
             index={index}
             onCoinClick={onCoinClick}
             onWatchlistToggle={onWatchlistToggle}
+            isInWatchlist={isInWatchlist}
           />
         ))}
       </div>

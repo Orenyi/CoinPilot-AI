@@ -13,6 +13,7 @@ import MarketsTable from "../components/markets/table/MarketsTable";
 import Pagination from "../components/markets/table/Pagination";
 import useCoins from "../hooks/useCoins";
 import EmptyMarkets from "../components/markets/common/EmptyMarkets";
+import useWatchlist from "../hooks/useWatchlist";
 
 const MarketsPage = () => {
   const {
@@ -43,6 +44,8 @@ const MarketsPage = () => {
     categories,
     pagination,
   } = useCoins();
+
+  const { toggleWatchlist, isInWatchlist } = useWatchlist();
 
   const filteredCoins = coins.filter((coin) => {
     const query = search.toLowerCase();
@@ -173,7 +176,12 @@ const MarketsPage = () => {
             message="Try another search or filter."
           />
         ) : (
-          <MarketsTable coins={displayedCoins} loading={loading} />
+          <MarketsTable
+            coins={displayedCoins}
+            loading={loading}
+            onWatchlistToggle={toggleWatchlist}
+            isInWatchlist={isInWatchlist}
+          />
         )}
       </section>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { FiArrowUpRight, FiArrowDownRight, FiStar } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 
 import Sparkline from "../../dashboard/charts/Sparkline";
 
@@ -29,8 +30,16 @@ const formatLargeNumber = (value) => {
   return `$${Number(value).toLocaleString()}`;
 };
 
-const MarketsRow = ({ coin, index, onCoinClick, onWatchlistToggle }) => {
+const MarketsRow = ({
+  coin,
+  index,
+  onCoinClick,
+  onWatchlistToggle,
+  isInWatchlist,
+}) => {
   const positive = coin.price_change_percentage_24h >= 0;
+
+  const watched = isInWatchlist?.(coin.id);
 
   const sparkline =
     coin.sparkline_in_7d?.price?.map((price) => ({
@@ -143,17 +152,27 @@ const MarketsRow = ({ coin, index, onCoinClick, onWatchlistToggle }) => {
 
       <td className="px-6 py-5 text-center">
         <button
-          onClick={() => onWatchlistToggle?.(coin)}
+          onClick={() => onWatchlistToggle?.(coin.id)}
           className="
-            rounded-lg
+            rounded-xl
             p-2
-            text-[var(--app-muted)]
-            transition
+            transition-all
+            duration-300
+            hover:scale-110
             hover:bg-[var(--app-card)]
-            hover:text-yellow-400
           "
         >
-          <FiStar size={18} />
+          {watched ? (
+            <FaStar
+              size={18}
+              className="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+            />
+          ) : (
+            <FiStar
+              size={18}
+              className="text-[var(--app-muted)] hover:text-yellow-400"
+            />
+          )}
         </button>
       </td>
     </tr>

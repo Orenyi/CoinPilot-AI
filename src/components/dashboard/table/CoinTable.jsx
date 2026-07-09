@@ -4,6 +4,7 @@ import CoinTableRow from "./CoinTableRow";
 import CoinSearch from "./CoinSearch";
 import TableTabs from "./TableTabs";
 import MobileCoinCard from "./MobileCoinCard";
+import useWatchlist from "../../../hooks/useWatchlist";
 
 const CoinTable = ({ coins = [] }) => {
   const [search, setSearch] = useState("");
@@ -30,6 +31,8 @@ const CoinTable = ({ coins = [] }) => {
 
     return data;
   }, [coins, search, activeTab]);
+
+  const { toggleWatchlist, isInWatchlist } = useWatchlist();
 
   return (
     <section
@@ -91,7 +94,13 @@ const CoinTable = ({ coins = [] }) => {
 
           <tbody>
             {filteredCoins.map((coin, index) => (
-              <CoinTableRow key={coin.id} index={index + 1} {...coin} />
+              <CoinTableRow
+                key={coin.id}
+                index={index + 1}
+                {...coin}
+                onWatchlistToggle={toggleWatchlist}
+                isInWatchlist={isInWatchlist}
+              />
             ))}
           </tbody>
         </table>
@@ -110,7 +119,12 @@ const CoinTable = ({ coins = [] }) => {
   "
       >
         {filteredCoins.map((coin) => (
-          <MobileCoinCard key={coin.id} {...coin} />
+          <MobileCoinCard
+            key={coin.id}
+            {...coin}
+            onWatchlistToggle={toggleWatchlist}
+            isInWatchlist={isInWatchlist}
+          />
         ))}
       </div>
     </section>

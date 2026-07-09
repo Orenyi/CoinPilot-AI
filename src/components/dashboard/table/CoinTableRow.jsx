@@ -1,9 +1,11 @@
 import React from "react";
 import { FiArrowRight, FiStar } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 
 import Sparkline from "../charts/Sparkline";
 
 const CoinTableRow = ({
+  id,
   index,
   image,
   name,
@@ -14,7 +16,11 @@ const CoinTableRow = ({
   volume,
   chartData,
   positive = true,
+  onWatchlistToggle,
+  isInWatchlist,
 }) => {
+  const watched = isInWatchlist?.(id);
+
   return (
     <tr
       className="
@@ -84,13 +90,26 @@ const CoinTableRow = ({
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
           <button
+            onClick={() => onWatchlistToggle?.(id)}
             className="
-              text-[var(--app-muted)]
-              transition
-              hover:text-yellow-400
-            "
+            rounded-xl
+            p-2
+            transition-all
+            duration-300
+            hover:scale-110
+          "
           >
-            <FiStar size={18} />
+            {watched ? (
+              <FaStar
+                size={18}
+                className="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+              />
+            ) : (
+              <FiStar
+                size={18}
+                className="text-[var(--app-muted)] hover:text-yellow-400"
+              />
+            )}
           </button>
 
           <button

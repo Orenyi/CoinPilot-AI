@@ -5,6 +5,7 @@ import {
   FiChevronRight,
   FiStar,
 } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 
 import Sparkline from "../../dashboard/charts/Sparkline";
 
@@ -34,8 +35,16 @@ const formatLargeNumber = (value) => {
   return `$${Number(value).toLocaleString()}`;
 };
 
-const MobileMarketCard = ({ coin, index, onCoinClick, onWatchlistToggle }) => {
+const MobileMarketCard = ({
+  coin,
+  index,
+  onCoinClick,
+  onWatchlistToggle,
+  isInWatchlist,
+}) => {
   const positive = coin.price_change_percentage_24h >= 0;
+
+  const watched = isInWatchlist?.(coin.id);
 
   const chartData =
     coin.sparkline_in_7d?.price?.map((price) => ({
@@ -84,17 +93,27 @@ const MobileMarketCard = ({ coin, index, onCoinClick, onWatchlistToggle }) => {
         </button>
 
         <button
-          onClick={() => onWatchlistToggle?.(coin)}
+          onClick={() => onWatchlistToggle?.(coin.id)}
           className="
-            rounded-lg
-            p-2
-            text-[var(--app-muted)]
-            transition
-            hover:bg-[var(--app-bg)]
-            hover:text-yellow-400
-          "
+    rounded-xl
+    p-2
+    transition-all
+    duration-300
+    hover:scale-110
+    hover:bg-[var(--app-bg)]
+  "
         >
-          <FiStar size={18} />
+          {watched ? (
+            <FaStar
+              size={18}
+              className="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+            />
+          ) : (
+            <FiStar
+              size={18}
+              className="text-[var(--app-muted)] hover:text-yellow-400"
+            />
+          )}
         </button>
       </div>
 
