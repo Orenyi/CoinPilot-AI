@@ -8,20 +8,23 @@ import EmptyWatchlist from "../components/watchlist/EmptyWatchlist";
 import AddCoinModal from "../components/watchlist/AddCoinModal";
 
 import useWatchlist from "../hooks/useWatchlist";
+import useCoins from "../hooks/useCoins";
 
 const WatchlistPage = () => {
-  const { watchlist, loading, removeFromWatchlist } = useWatchlist();
+  const { watchlist, loading, removeCoin, addCoin } = useWatchlist();
 
-  const [showAddModal, setShowAddModal] = useState(false);
+  const { coins } = useCoins();
+
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <DashboardLayout
-      title="Your Watchlist"
-      subtitle="Track coins you care about most."
+      title="Watchlist"
+      subtitle="Track and monitor your favorite cryptocurrencies."
     >
-      <section className="mt-8 flex justify-end">
+      <div className="mt-8 flex justify-end">
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => setShowModal(true)}
           className="
             rounded-xl
             bg-gradient-to-r
@@ -32,35 +35,38 @@ const WatchlistPage = () => {
             py-3
             font-semibold
             text-white
-            transition
-            hover:opacity-90
           "
         >
           + Add Coin
         </button>
-      </section>
+      </div>
 
-      <section className="mt-8">
+      <div className="mt-8">
         {watchlist.length === 0 ? (
-          <EmptyWatchlist />
+          <EmptyWatchlist onAddCoin={() => setShowModal(true)} />
         ) : (
           <>
             <WatchlistTable
               coins={watchlist}
               loading={loading}
-              onRemove={removeFromWatchlist}
+              onRemove={removeCoin}
             />
 
             <div className="mt-8">
-              <TrendingWatchlist coins={watchlist.slice(0, 5)} />
+              <TrendingWatchlist coins={watchlist.slice(0, 6)} />
             </div>
           </>
         )}
-      </section>
+      </div>
 
       <AddCoinModal
-        open={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        coins={coins}
+        onAddCoin={async (coinId) => {
+          await addCoin(coinId);
+          setShowModal(false);
+        }}
       />
     </DashboardLayout>
   );

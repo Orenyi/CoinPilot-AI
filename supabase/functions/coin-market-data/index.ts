@@ -35,7 +35,63 @@ serve(async (req) => {
       ids = [],
     } = req.method === "POST" ? await req.json() : {};
 
+    const searchQuery = search.trim();
+
     const marketUrl = new URL(`${BASE_URL}/coins/markets`);
+
+    // Live search for any coin
+    if (searchQuery && ids.length === 0) {
+      const searchResponse = await fetch(
+        `${BASE_URL}/search?query=${encodeURIComponent(searchQuery)}`,
+        { headers },
+      );
+
+      if (!searchResponse.ok) {
+        throw new Error("Search failed.");
+      }
+
+      const searchResults = await searchResponse.json();
+
+      const matchedIds = searchResults.coins
+        .slice(0, 20)
+        .map((coin: any) => coin.id)
+        .join(",");
+
+      if (!matchedIds) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            coins: [],
+          }),
+          {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+      }
+
+      const marketResponse = await fetch(
+        `${BASE_URL}/coins/markets?vs_currency=usd&ids=${matchedIds}&sparkline=true&price_change_percentage=24h`,
+        { headers },
+      );
+
+      const coins = await marketResponse.json();
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          coins,
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
 
     marketUrl.searchParams.set("vs_currency", "usd");
     marketUrl.searchParams.set("sparkline", "true");
@@ -55,29 +111,6 @@ serve(async (req) => {
 
     if (category && category !== "all") {
       marketUrl.searchParams.set("category", category);
-    }
-
-    // Search every coin in CoinGecko
-    if (search) {
-      const searchResponse = await fetch(
-        `${BASE_URL}/search?query=${encodeURIComponent(search)}`,
-        { headers },
-      );
-
-      const searchData = await searchResponse.json();
-
-      const ids = searchData.coins
-        ?.slice(0, 50)
-        .map((coin: any) => coin.id)
-        .join(",");
-
-      if (ids) {
-        marketUrl.searchParams.delete("order");
-        marketUrl.searchParams.delete("page");
-        marketUrl.searchParams.delete("per_page");
-
-        marketUrl.searchParams.set("ids", ids);
-      }
     }
 
     // Fetch data from CoinGecko API(all categories)
@@ -121,16 +154,6 @@ serve(async (req) => {
       totalCoins / Number(perPage),
     );
 
-    if (search) {
-      const query = search.toLowerCase();
-
-      coins = coins.filter((coin: any) => {
-        return (
-          coin.name.toLowerCase().includes(query) ||
-          coin.symbol.toLowerCase().includes(query)
-        );
-      });
-    }
     const trending = await trendingResponse.json();
     const categories = await categoriesResponse.json();
 

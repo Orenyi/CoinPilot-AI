@@ -144,3 +144,16 @@ button {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.coinpilot-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.coinpilot-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.coinpilot-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2563eb, #7c3aed, #9333ea);
+  border-radius: 999px;
+}

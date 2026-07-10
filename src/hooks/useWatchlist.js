@@ -6,6 +6,8 @@ import {
   removeFromWatchlist,
 } from "../services/watchlistService";
 
+import { getCoinsByIds } from "../services/coinGeckoService";
+
 const useWatchlist = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,9 +16,31 @@ const useWatchlist = () => {
     try {
       setLoading(true);
 
-      const data = await getWatchlist();
+      // Get saved watchlist from Supabase
+      const savedCoins = await getWatchlist();
 
-      setWatchlist(data);
+      // Extract coin IDs
+      const ids = savedCoins.map((coin) => coin.coin_id);
+
+      if (!ids.length) {
+        setWatchlist([]);
+        return;
+      }
+
+      // Fetch live market data from CoinGecko
+      const marketCoins = await getCoinsByIds(ids);
+
+      // Preserve watchlist record id if needed later
+      const merged = marketCoins.map((coin) => {
+        const saved = savedCoins.find((item) => item.coin_id === coin.id);
+
+        return {
+          ...coin,
+          watchlist_id: saved?.id,
+        };
+      });
+
+      setWatchlist(merged);
     } catch (error) {
       console.error(error);
     } finally {
@@ -37,7 +61,7 @@ const useWatchlist = () => {
   };
 
   const isInWatchlist = (coinId) => {
-    return watchlist.some((coin) => coin.coin_id === coinId);
+    return watchlist.some((coin) => coin.id === coinId);
   };
 
   const toggleWatchlist = async (coinId) => {

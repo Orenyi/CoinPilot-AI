@@ -1,18 +1,32 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiSearch, FiX, FiPlus } from "react-icons/fi";
+import { searchCoins } from "../../services/coinGeckoService";
 
-const AddCoinModal = ({ open, onClose, coins = [], onAddCoin }) => {
+const AddCoinModal = ({ open, onClose, onAddCoin }) => {
   const [search, setSearch] = useState("");
+  const [filteredCoins, setFilteredCoins] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredCoins = useMemo(() => {
-    if (!search.trim()) return coins;
+  useEffect(() => {
+    if (!open) return;
 
-    return coins.filter(
-      (coin) =>
-        coin.name.toLowerCase().includes(search.toLowerCase()) ||
-        coin.symbol.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [coins, search]);
+    const timer = setTimeout(async () => {
+      try {
+        setLoading(true);
+
+        // If search is empty, show popular coins
+        const results = await searchCoins(search || "");
+
+        setFilteredCoins(results);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search, open]);
 
   if (!open) return null;
 
@@ -43,7 +57,11 @@ const AddCoinModal = ({ open, onClose, coins = [], onAddCoin }) => {
           </div>
 
           <button
-            onClick={onClose}
+            onClick={() => {
+              setSearch("");
+              setFilteredCoins([]);
+              onClose();
+            }}
             className="
               rounded-xl
               p-2
@@ -96,8 +114,20 @@ const AddCoinModal = ({ open, onClose, coins = [], onAddCoin }) => {
 
         {/* Coin List */}
 
-        <div className="max-h-[420px] overflow-y-auto px-6 pb-6">
-          {filteredCoins.length === 0 ? (
+        <div
+          className="
+            max-h-[420px]
+            overflow-y-auto
+            coinpilot-scrollbar
+            px-6
+            pb-6
+        "
+        >
+          {loading ? (
+            <p className="py-10 text-center text-[var(--app-muted)]">
+              Loading coins...
+            </p>
+          ) : filteredCoins.length === 0 ? (
             <p className="py-10 text-center text-[var(--app-muted)]">
               No coins found.
             </p>
@@ -137,7 +167,9 @@ const AddCoinModal = ({ open, onClose, coins = [], onAddCoin }) => {
                   </div>
 
                   <button
-                    onClick={() => onAddCoin?.(coin.id)}
+                    onClick={async () => {
+                      await onAddCoin?.(coin.id);
+                    }}
                     className="
                       flex
                       items-center
