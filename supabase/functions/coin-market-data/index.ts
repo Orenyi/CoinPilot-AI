@@ -32,16 +32,26 @@ serve(async (req) => {
       sort = "market_cap_desc",
       page = 1,
       perPage = 50,
+      ids = [],
     } = req.method === "POST" ? await req.json() : {};
 
     const marketUrl = new URL(`${BASE_URL}/coins/markets`);
 
     marketUrl.searchParams.set("vs_currency", "usd");
-    marketUrl.searchParams.set("order", sort);
-    marketUrl.searchParams.set("page", page.toString());
-    marketUrl.searchParams.set("per_page", perPage.toString());
     marketUrl.searchParams.set("sparkline", "true");
     marketUrl.searchParams.set("price_change_percentage", "24h");
+
+    if (ids.length) {
+      marketUrl.searchParams.set("ids", ids.join(","));
+    } else {
+      marketUrl.searchParams.set("order", sort);
+      marketUrl.searchParams.set("page", page.toString());
+      marketUrl.searchParams.set("per_page", perPage.toString());
+
+      if (category && category !== "all") {
+        marketUrl.searchParams.set("category", category);
+      }
+    }
 
     if (category && category !== "all") {
       marketUrl.searchParams.set("category", category);

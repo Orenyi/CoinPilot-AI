@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
+import WatchlistPage from "./pages/WatchlistPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -54,6 +55,9 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/markets" element={<MarketsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/watchlist" element={<WatchlistPage />} />
         </Route>
 
         {/* 404 */}
