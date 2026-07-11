@@ -15,6 +15,8 @@ import { HiOutlineUserCircle } from "react-icons/hi2";
 import { LuPanelLeft } from "react-icons/lu";
 
 import useSidebar from "../../../hooks/useSidebar";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 
 const menuItems = [
   {
@@ -63,32 +65,32 @@ const Sidebar = () => {
   const { collapsed, toggleSidebar } = useSidebar();
 
   return (
-    <aside className="flex h-full flex-col overflow-hidden">
+    <aside className="flex h-screen flex-col overflow-hidden">
       {/* ================= Header ================= */}
 
       <div
         className={`
-    flex
-    h-[76px]
-    items-center
-    justify-between
-    border-b
-    border-[var(--app-border)]
-    transition-all
-    duration-300
-   ${collapsed ? "justify-center px-0" : "justify-between px-5"}
-  `}
+          flex
+          h-[76px]
+          items-center
+          justify-between
+          border-b
+          border-[var(--app-border)]
+          transition-all
+          duration-300
+        ${collapsed ? "justify-center px-0" : "justify-between px-5"}
+        `}
       >
         {/* Logo */}
 
         <div
           onClick={collapsed ? toggleSidebar : undefined}
           className={`
-    flex
-    cursor-pointer
-    items-center
-    ${collapsed ? "justify-center w-full" : ""}
-  `}
+            flex
+            cursor-pointer
+            items-center
+            ${collapsed ? "justify-center w-full" : ""}
+          `}
         >
           {collapsed ? (
             <img
@@ -144,6 +146,8 @@ const Sidebar = () => {
           {menuItems.map(({ name, path, icon: Icon }) => (
             <li key={name}>
               <NavLink
+                data-tooltip-id="sidebar-tooltip"
+                data-tooltip-content={collapsed ? name : ""}
                 to={path}
                 className={({ isActive }) =>
                   `
@@ -167,17 +171,19 @@ const Sidebar = () => {
                   className="shrink-0 transition-transform duration-300 group-hover:scale-110"
                 />
 
-                {!collapsed && (
-                  <span
-                    className="
-                      whitespace-nowrap
-                      text-sm
-                      font-medium
-                    "
-                  >
-                    {name}
-                  </span>
-                )}
+                <span
+                  className={`
+                    overflow-hidden
+                    whitespace-nowrap
+                    text-sm
+                    font-medium
+                    transition-all
+                    duration-300
+                    ${collapsed ? "w-0 opacity-0" : "ml-1 w-auto opacity-100"}
+                  `}
+                >
+                  {name}
+                </span>
               </NavLink>
             </li>
           ))}
@@ -234,6 +240,14 @@ const Sidebar = () => {
           )}
         </button>
       </div>
+      {collapsed && (
+        <Tooltip
+          id="sidebar-tooltip"
+          place="right"
+          offset={18}
+          className="!rounded-xl !bg-gradient-to-r from-[#2563eb] to-[#9333ea] !px-3 !py-2 !text-sm"
+        />
+      )}
     </aside>
   );
 };

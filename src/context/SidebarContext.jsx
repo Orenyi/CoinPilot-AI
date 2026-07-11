@@ -6,16 +6,27 @@ export const SidebarProvider = ({ children }) => {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem("sidebar-collapsed");
 
-    return saved ? JSON.parse(saved) : false;
+    // Default = collapsed
+    return saved ? JSON.parse(saved) : true;
   });
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", JSON.stringify(collapsed));
-  }, [collapsed]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("sidebar-collapsed", JSON.stringify(collapsed));
+    }
+  }, [collapsed, mounted]);
 
   const toggleSidebar = () => {
     setCollapsed((prev) => !prev);
   };
+
+  if (!mounted) return null;
 
   return (
     <SidebarContext.Provider

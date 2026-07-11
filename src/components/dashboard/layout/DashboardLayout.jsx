@@ -22,24 +22,40 @@ const DashboardLayout = ({
 
         <aside
           className={`
-            hidden
-            lg:block
-            shrink-0
-            border-r
-            border-[var(--app-border)]
-            bg-[var(--app-surface)]
-            transition-all
-            duration-300
-            ease-in-out
-            ${collapsed ? "w-[84px]" : "w-[270px]"}
-          `}
+              hidden
+              lg:block
+              fixed
+              left-0
+              top-0
+              h-screen
+              shrink-0
+              border-r
+              border-[var(--app-border)]
+              bg-[var(--app-surface)]
+              transition-all
+              duration-300
+              ease-in-out
+              z-50
+              ${collapsed ? "w-[84px]" : "w-[270px]"}
+            `}
         >
           <Sidebar />
         </aside>
 
         {/* Main Content */}
 
-        <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
+        <div
+          className={`
+            flex
+            min-h-screen
+            flex-1
+            flex-col
+            overflow-hidden
+            transition-all
+            duration-300
+            ${collapsed ? "lg:ml-[84px]" : "lg:ml-[270px]"}
+          `}
+        >
           {/* Topbar */}
 
           <header
