@@ -2,8 +2,6 @@ import React from "react";
 import { FiArrowUpRight, FiArrowDownRight, FiStar } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
 
-import Sparkline from "../../dashboard/charts/Sparkline";
-
 const formatCurrency = (value) => {
   if (value == null) return "--";
 
@@ -41,11 +39,6 @@ const MarketsRow = ({
 
   const watched = isInWatchlist?.(coin.id);
 
-  const sparkline =
-    coin.sparkline_in_7d?.price?.map((price) => ({
-      value: price,
-    })) ?? [];
-
   return (
     <tr
       className="
@@ -64,7 +57,7 @@ const MarketsRow = ({
 
       {/* Coin */}
 
-      <td className="px-6 py-5">
+      <td className="min-w-[260px] px-6 py-5">
         <button
           onClick={() => onCoinClick?.(coin)}
           className="flex items-center gap-4 text-left"
@@ -110,12 +103,6 @@ const MarketsRow = ({
           )}
           {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
         </div>
-      </td>
-
-      {/* Sparkline */}
-
-      <td className="w-[140px] px-4 py-5">
-        <Sparkline data={sparkline} positive={positive} />
       </td>
 
       {/* Market Cap */}

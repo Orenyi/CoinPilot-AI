@@ -4,14 +4,11 @@ import WatchlistRow from "./WatchlistRow";
 import MobileWatchlistCard from "./MobileWatchlistCard";
 
 import EmptyWatchlist from "./EmptyWatchlist";
+import LoadingWatchlist from "./LoadingWatchlist";
 
 const WatchlistTable = ({ coins = [], loading = false, onRemove }) => {
   if (loading) {
-    return (
-      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-12 text-center">
-        <p className="text-[var(--app-muted)]">Loading watchlist...</p>
-      </div>
-    );
+    return <LoadingWatchlist />;
   }
 
   if (!coins.length) {
@@ -55,10 +52,6 @@ const WatchlistTable = ({ coins = [], loading = false, onRemove }) => {
 
                 <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[var(--app-muted)]">
                   Market Cap
-                </th>
-
-                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wide text-[var(--app-muted)]">
-                  7D Chart
                 </th>
 
                 <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wide text-[var(--app-muted)]">

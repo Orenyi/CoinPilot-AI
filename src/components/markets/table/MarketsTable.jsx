@@ -61,10 +61,6 @@ const MarketsTable = ({
                   24h
                 </th>
 
-                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wide text-[var(--app-muted)]">
-                  7D
-                </th>
-
                 <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[var(--app-muted)]">
                   Market Cap
                 </th>

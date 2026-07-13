@@ -30,13 +30,14 @@ const useCoins = () => {
   const [page, setPage] = useState(1);
 
   const [perPage] = useState(50);
+  const [initialized, setInitialized] = useState(false);
 
   const fetchMarketData = useCallback(
     async (showLoader = true) => {
       const startTime = Date.now();
 
       try {
-        if (showLoader) {
+        if (showLoader && !initialized) {
           setLoading(true);
         } else {
           setRefreshing(true);
@@ -57,6 +58,7 @@ const useCoins = () => {
         setTrendingCoins(data.trending ?? []);
         setCategories(data.categories ?? []);
         setPagination(data.pagination);
+        setInitialized(true);
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load market data.");
@@ -67,11 +69,11 @@ const useCoins = () => {
           await new Promise((resolve) => setTimeout(resolve, 500 - elapsed));
         }
 
-        if (showLoader) {
+        if (showLoader && !initialized) {
           setLoading(false);
-        } else {
-          setRefreshing(false);
         }
+
+        setRefreshing(false);
       }
     },
     [debouncedSearch, category, sort, page, perPage],

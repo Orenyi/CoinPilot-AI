@@ -7,8 +7,6 @@ import {
 } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
 
-import Sparkline from "../../dashboard/charts/Sparkline";
-
 const formatCurrency = (value) => {
   if (value == null) return "--";
 
@@ -45,11 +43,6 @@ const MobileMarketCard = ({
   const positive = coin.price_change_percentage_24h >= 0;
 
   const watched = isInWatchlist?.(coin.id);
-
-  const chartData =
-    coin.sparkline_in_7d?.price?.map((price) => ({
-      value: price,
-    })) || [];
 
   return (
     <div
@@ -144,15 +137,9 @@ const MobileMarketCard = ({
         </div>
       </div>
 
-      {/* Chart */}
-
-      <div className="mt-5">
-        <Sparkline data={chartData} positive={positive} />
-      </div>
-
       {/* Stats */}
 
-      <div className="mt-5 grid grid-cols-2 gap-4">
+      <div className="mt-5 grid grid-cols-2 gap-5">
         <div>
           <p className="text-xs text-[var(--app-muted)]">Market Cap</p>
 
@@ -175,16 +162,16 @@ const MobileMarketCard = ({
       <div className="mt-5 flex items-center justify-between border-t border-[var(--app-border)] pt-4">
         <span
           className="
-            rounded-full
-            bg-[var(--color-primary-2)]/10
-            px-3
-            py-1
-            text-xs
-            font-semibold
-            text-[var(--color-primary-2)]
-          "
+          rounded-full
+          bg-[var(--color-primary-2)]/10
+          px-3
+          py-1
+          text-xs
+          font-semibold
+          text-[var(--color-primary-2)]
+        "
         >
-          AI Score • Soon
+          AI Insight
         </span>
 
         <button

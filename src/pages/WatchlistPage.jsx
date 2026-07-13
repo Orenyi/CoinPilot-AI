@@ -42,13 +42,15 @@ const WatchlistPage = () => {
       </div>
 
       <div className="mt-8">
-        {watchlist.length === 0 ? (
+        {loading ? (
+          <WatchlistTable loading={true} coins={[]} onRemove={removeCoin} />
+        ) : watchlist.length === 0 ? (
           <EmptyWatchlist onAddCoin={() => setShowModal(true)} />
         ) : (
           <>
             <WatchlistTable
               coins={watchlist}
-              loading={loading}
+              loading={false}
               onRemove={removeCoin}
             />
 

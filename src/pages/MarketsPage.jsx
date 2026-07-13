@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 
 import DashboardLayout from "../components/dashboard/layout/DashboardLayout";
 
@@ -47,53 +47,56 @@ const MarketsPage = () => {
 
   const { toggleWatchlist, isInWatchlist } = useWatchlist();
 
-  const filteredCoins = coins.filter((coin) => {
+  const filteredCoins = useMemo(() => {
     const query = search.toLowerCase();
 
-    return (
-      coin.name.toLowerCase().includes(query) ||
-      coin.symbol.toLowerCase().includes(query)
+    return coins.filter(
+      (coin) =>
+        coin.name.toLowerCase().includes(query) ||
+        coin.symbol.toLowerCase().includes(query),
     );
-  });
+  }, [coins, search]);
 
-  const sortedCoins = [...filteredCoins].sort((a, b) => {
-    switch (sort) {
-      case "market_cap_desc":
-        return b.market_cap - a.market_cap;
+  const sortedCoins = useMemo(() => {
+    return [...filteredCoins].sort((a, b) => {
+      switch (sort) {
+        case "market_cap_desc":
+          return b.market_cap - a.market_cap;
 
-      case "market_cap_asc":
-        return a.market_cap - b.market_cap;
+        case "market_cap_asc":
+          return a.market_cap - b.market_cap;
 
-      case "price_desc":
-        return b.current_price - a.current_price;
+        case "price_desc":
+          return b.current_price - a.current_price;
 
-      case "price_asc":
-        return a.current_price - b.current_price;
+        case "price_asc":
+          return a.current_price - b.current_price;
 
-      case "change_desc":
-        return b.price_change_percentage_24h - a.price_change_percentage_24h;
+        case "change_desc":
+          return b.price_change_percentage_24h - a.price_change_percentage_24h;
 
-      case "change_asc":
-        return a.price_change_percentage_24h - b.price_change_percentage_24h;
+        case "change_asc":
+          return a.price_change_percentage_24h - b.price_change_percentage_24h;
 
-      case "volume_desc":
-        return b.total_volume - a.total_volume;
+        case "volume_desc":
+          return b.total_volume - a.total_volume;
 
-      case "volume_asc":
-        return a.total_volume - b.total_volume;
+        case "volume_asc":
+          return a.total_volume - b.total_volume;
 
-      case "name_asc":
-        return a.name.localeCompare(b.name);
+        case "name_asc":
+          return a.name.localeCompare(b.name);
 
-      case "name_desc":
-        return b.name.localeCompare(a.name);
+        case "name_desc":
+          return b.name.localeCompare(a.name);
 
-      default:
-        return 0;
-    }
-  });
+        default:
+          return 0;
+      }
+    });
+  }, [filteredCoins, sort]);
 
-  const displayedCoins = (() => {
+  const displayedCoins = useMemo(() => {
     switch (filter) {
       case "trending":
         return trendingCoins;
@@ -116,12 +119,12 @@ const MarketsPage = () => {
         );
 
       case "watchlist":
-        return []; // placeholder
+        return [];
 
       default:
         return sortedCoins;
     }
-  })();
+  }, [filter, sortedCoins, trendingCoins]);
 
   return (
     <DashboardLayout
@@ -136,6 +139,7 @@ const MarketsPage = () => {
         <MarketsStats
           globalMarket={globalMarket}
           trendingCoins={trendingCoins}
+          loading={loading}
         />
       </section>
 
@@ -170,19 +174,12 @@ const MarketsPage = () => {
       {/* ================= Table ================= */}
 
       <section className="mt-6">
-        {displayedCoins.length === 0 ? (
-          <EmptyMarkets
-            title="No cryptocurrencies found"
-            message="Try another search or filter."
-          />
-        ) : (
-          <MarketsTable
-            coins={displayedCoins}
-            loading={loading}
-            onWatchlistToggle={toggleWatchlist}
-            isInWatchlist={isInWatchlist}
-          />
-        )}
+        <MarketsTable
+          coins={displayedCoins}
+          loading={loading}
+          onWatchlistToggle={toggleWatchlist}
+          isInWatchlist={isInWatchlist}
+        />
       </section>
 
       {/* ================= Pagination ================= */}

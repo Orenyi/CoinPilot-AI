@@ -6,8 +6,6 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 
-import Sparkline from "../dashboard/charts/Sparkline";
-
 const formatCurrency = (value) => {
   if (value == null) return "--";
 
@@ -37,11 +35,6 @@ const formatLargeNumber = (value) => {
 const WatchlistRow = ({ coin, index, onRemove, onCoinClick }) => {
   const positive = coin.price_change_percentage_24h >= 0;
 
-  const chartData =
-    coin.sparkline_in_7d?.price?.map((price) => ({
-      value: price,
-    })) ?? [];
-
   return (
     <tr
       className="
@@ -60,7 +53,7 @@ const WatchlistRow = ({ coin, index, onRemove, onCoinClick }) => {
 
       {/* Coin */}
 
-      <td className="px-6 py-5">
+      <td className="min-w-[260px] px-6 py-5">
         <button
           onClick={() => onCoinClick?.(coin)}
           className="flex items-center gap-4 text-left"
@@ -114,16 +107,10 @@ const WatchlistRow = ({ coin, index, onRemove, onCoinClick }) => {
         {formatLargeNumber(coin.market_cap)}
       </td>
 
-      {/* 7D Chart */}
-
-      <td className="w-[140px] px-4 py-5">
-        <Sparkline data={chartData} positive={positive} />
-      </td>
-
       {/* Actions */}
 
-      <td className="px-6 py-5">
-        <div className="flex items-center justify-center gap-3">
+      <td className="px-8 py-5">
+        <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => onRemove?.(coin.id)}
             className="

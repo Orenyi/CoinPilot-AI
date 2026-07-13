@@ -6,8 +6,6 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
-import useCoins from "../../../hooks/useCoins";
-
 const formatCurrency = (value) => {
   if (!value) return "--";
 
@@ -26,8 +24,35 @@ const formatCurrency = (value) => {
   return `$${Number(value).toLocaleString()}`;
 };
 
-const MarketsStats = () => {
-  const { globalMarket, trendingCoins } = useCoins();
+const MarketsStats = ({ globalMarket, trendingCoins, loading }) => {
+  if (loading) {
+    return (
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="
+            rounded-2xl
+            border
+            border-[var(--app-border)]
+            bg-[var(--app-surface)]
+            p-5
+          "
+          >
+            <div className="flex items-center justify-between">
+              <div className="h-12 w-12 animate-pulse rounded-xl bg-[var(--app-card)]" />
+
+              <div className="h-4 w-10 animate-pulse rounded bg-[var(--app-card)]" />
+            </div>
+
+            <div className="mt-5 h-4 w-24 animate-pulse rounded bg-[var(--app-card)]" />
+
+            <div className="mt-3 h-8 w-40 animate-pulse rounded bg-[var(--app-card)]" />
+          </div>
+        ))}
+      </section>
+    );
+  }
 
   const stats = [
     {
