@@ -3,6 +3,9 @@ import { FiArrowUpRight, FiArrowDownRight } from "react-icons/fi";
 
 import Sparkline from "../charts/Sparkline";
 
+import useCurrency from "../../../hooks/useCurrency";
+import { formatCurrency } from "../../../utils/formatCurrency";
+
 const TrendingCoinsCard = ({
   image,
   name,
@@ -12,6 +15,8 @@ const TrendingCoinsCard = ({
   positive = true,
   chartData,
 }) => {
+  const { currency } = useCurrency();
+
   return (
     <article
       className="
@@ -83,7 +88,9 @@ const TrendingCoinsCard = ({
       {/* Price */}
 
       <div className="relative mt-6">
-        <h2 className="text-2xl font-bold text-[var(--app-text)]">${price}</h2>
+        <h2 className="text-2xl font-bold text-[var(--app-text)]">
+          {formatCurrency(price, currency)}
+        </h2>
 
         <div
           className={`

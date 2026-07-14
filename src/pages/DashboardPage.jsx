@@ -24,24 +24,8 @@ import LoadingTrending from "../components/dashboard/common/LoadingTrending";
 import ErrorState from "../components/dashboard/common/ErrorState";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
-
-const formatCurrency = (value) => {
-  if (!value) return "--";
-
-  if (value >= 1_000_000_000_000) {
-    return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
-  }
-
-  if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  }
-
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`;
-  }
-
-  return `$${value.toLocaleString()}`;
-};
+import useCurrency from "../hooks/useCurrency";
+import { formatLargeCurrency } from "../utils/formatCurrency";
 
 const formatPercentage = (value) => {
   if (value == null) return "--";
@@ -59,6 +43,8 @@ const DashboardPage = () => {
     refreshing,
     refresh,
   } = useCoins();
+
+  const { currency } = useCurrency();
 
   // Temporary chart until live chart data is added
   const chartData = [
@@ -79,15 +65,15 @@ const DashboardPage = () => {
     name: coin.name,
     symbol: coin.symbol,
 
-    price: coin.current_price.toLocaleString(),
+    price: coin.current_price,
 
     change: `${coin.price_change_percentage_24h?.toFixed(2)}%`,
 
     positive: coin.price_change_percentage_24h >= 0,
 
-    marketCap: formatCurrency(coin.market_cap),
+    marketCap: coin.market_cap,
 
-    volume: formatCurrency(coin.total_volume),
+    volume: coin.total_volume,
 
     chartData:
       coin.sparkline_in_7d?.price?.map((price) => ({
@@ -101,7 +87,7 @@ const DashboardPage = () => {
     name: coin.name,
     symbol: coin.symbol,
 
-    price: coin.current_price.toLocaleString(),
+    price: coin.current_price,
 
     change: `${coin.price_change_percentage_24h?.toFixed(2)}%`,
 
@@ -179,7 +165,10 @@ const DashboardPage = () => {
         <MarketStatCard
           icon={<FiDollarSign className="text-orange-500" />}
           title="Total Market Cap"
-          value={formatCurrency(globalMarket?.total_market_cap?.usd)}
+          value={formatLargeCurrency(
+            globalMarket?.total_market_cap?.[currency.toLowerCase()],
+            currency,
+          )}
           change={formatPercentage(
             globalMarket?.market_cap_change_percentage_24h_usd,
           )}
@@ -190,7 +179,10 @@ const DashboardPage = () => {
         <MarketStatCard
           icon={<FiActivity className="text-blue-500" />}
           title="24h Volume"
-          value={formatCurrency(globalMarket?.total_volume?.usd)}
+          value={formatLargeCurrency(
+            globalMarket?.total_volume?.[currency.toLowerCase()],
+            currency,
+          )}
           change={formatPercentage(
             globalMarket?.market_cap_change_percentage_24h_usd,
           )}

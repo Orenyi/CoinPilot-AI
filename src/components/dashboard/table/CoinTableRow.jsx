@@ -4,6 +4,12 @@ import { FaStar } from "react-icons/fa";
 
 import Sparkline from "../charts/Sparkline";
 
+import useCurrency from "../../../hooks/useCurrency";
+import {
+  formatCurrency,
+  formatLargeCurrency,
+} from "../../../utils/formatCurrency";
+
 const CoinTableRow = ({
   id,
   index,
@@ -19,6 +25,7 @@ const CoinTableRow = ({
   onWatchlistToggle,
   isInWatchlist,
 }) => {
+  const { currency } = useCurrency();
   const watched = isInWatchlist?.(id);
 
   return (
@@ -57,7 +64,9 @@ const CoinTableRow = ({
 
       {/* Price */}
 
-      <td className="px-5 py-4 font-medium text-[var(--app-text)]">${price}</td>
+      <td className="px-5 py-4 font-medium text-[var(--app-text)]">
+        {formatCurrency(price, currency)}
+      </td>
 
       {/* Change */}
 
@@ -71,11 +80,16 @@ const CoinTableRow = ({
 
       {/* Market Cap */}
 
-      <td className="px-5 py-4 text-[var(--app-text)]">{marketCap}</td>
+      <td className="px-5 py-4 text-[var(--app-text)]">
+        {formatLargeCurrency(marketCap, currency)}
+      </td>
 
       {/* Volume */}
 
-      <td className="px-5 py-4 text-[var(--app-text)]">{volume}</td>
+      <td className="px-5 py-4 text-[var(--app-text)]">
+        {" "}
+        {formatLargeCurrency(volume, currency)}
+      </td>
 
       {/* Chart */}
 

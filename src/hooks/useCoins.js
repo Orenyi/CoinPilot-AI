@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import useCurrency from "./useCurrency";
 
 import { getMarketData } from "../services/coinGeckoService";
 import useDebounce from "./useDebounce";
@@ -32,6 +33,8 @@ const useCoins = () => {
   const [perPage] = useState(50);
   const [initialized, setInitialized] = useState(false);
 
+  const { currency } = useCurrency();
+
   const fetchMarketData = useCallback(
     async (showLoader = true) => {
       const startTime = Date.now();
@@ -46,6 +49,7 @@ const useCoins = () => {
         setError(null);
 
         const data = await getMarketData({
+          currency: currency.toLowerCase(),
           search: debouncedSearch,
           category,
           sort,
@@ -76,7 +80,7 @@ const useCoins = () => {
         setRefreshing(false);
       }
     },
-    [debouncedSearch, category, sort, page, perPage],
+    [currency, debouncedSearch, category, sort, page, perPage],
   );
 
   const refresh = useCallback(() => {

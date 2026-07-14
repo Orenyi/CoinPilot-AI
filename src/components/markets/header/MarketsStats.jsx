@@ -6,25 +6,12 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
-const formatCurrency = (value) => {
-  if (!value) return "--";
-
-  if (value >= 1_000_000_000_000) {
-    return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
-  }
-
-  if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  }
-
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`;
-  }
-
-  return `$${Number(value).toLocaleString()}`;
-};
+import useCurrency from "../../../hooks/useCurrency";
+import { formatLargeCurrency } from "../../../utils/formatCurrency";
 
 const MarketsStats = ({ globalMarket, trendingCoins, loading }) => {
+  const { currency } = useCurrency();
+
   if (loading) {
     return (
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -57,13 +44,19 @@ const MarketsStats = ({ globalMarket, trendingCoins, loading }) => {
   const stats = [
     {
       title: "Market Cap",
-      value: formatCurrency(globalMarket?.total_market_cap?.usd),
+      value: formatLargeCurrency(
+        globalMarket?.total_market_cap?.[currency.toLowerCase()],
+        currency,
+      ),
       icon: <FiDollarSign size={20} />,
       color: "text-orange-500",
     },
     {
       title: "24h Volume",
-      value: formatCurrency(globalMarket?.total_volume?.usd),
+      value: formatLargeCurrency(
+        globalMarket?.total_volume?.[currency.toLowerCase()],
+        currency,
+      ),
       icon: <FiActivity size={20} />,
       color: "text-blue-500",
     },

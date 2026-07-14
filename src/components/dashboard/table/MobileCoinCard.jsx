@@ -4,6 +4,9 @@ import { FaStar } from "react-icons/fa";
 
 import Sparkline from "../charts/Sparkline";
 
+import useCurrency from "../../../hooks/useCurrency";
+import { formatCurrency } from "../../../utils/formatCurrency";
+
 const MobileCoinCard = ({
   id,
   image,
@@ -17,6 +20,7 @@ const MobileCoinCard = ({
   isInWatchlist,
 }) => {
   const watched = isInWatchlist?.(id);
+  const { currency } = useCurrency();
 
   return (
     <div
@@ -77,7 +81,9 @@ const MobileCoinCard = ({
       {/* Price */}
 
       <div className="mt-5">
-        <h2 className="text-2xl font-bold text-[var(--app-text)]">${price}</h2>
+        <h2 className="text-2xl font-bold text-[var(--app-text)]">
+          {formatCurrency(price, currency)}
+        </h2>
 
         <p
           className={`mt-1 text-sm font-semibold ${

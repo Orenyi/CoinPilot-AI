@@ -2,31 +2,11 @@ import React from "react";
 import { FiArrowUpRight, FiArrowDownRight, FiStar } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
 
-const formatCurrency = (value) => {
-  if (value == null) return "--";
-
-  return `$${Number(value).toLocaleString(undefined, {
-    maximumFractionDigits: value >= 1 ? 2 : 6,
-  })}`;
-};
-
-const formatLargeNumber = (value) => {
-  if (!value) return "--";
-
-  if (value >= 1_000_000_000_000) {
-    return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
-  }
-
-  if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  }
-
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`;
-  }
-
-  return `$${Number(value).toLocaleString()}`;
-};
+import useCurrency from "../../../hooks/useCurrency";
+import {
+  formatCurrency,
+  formatLargeCurrency,
+} from "../../../utils/formatCurrency";
 
 const MarketsRow = ({
   coin,
@@ -38,6 +18,7 @@ const MarketsRow = ({
   const positive = coin.price_change_percentage_24h >= 0;
 
   const watched = isInWatchlist?.(coin.id);
+  const { currency } = useCurrency();
 
   return (
     <tr
@@ -83,7 +64,7 @@ const MarketsRow = ({
       {/* Price */}
 
       <td className="px-6 py-5 text-right font-semibold text-[var(--app-text)]">
-        {formatCurrency(coin.current_price)}
+        {formatCurrency(coin.current_price, currency)}
       </td>
 
       {/* 24h */}
@@ -108,13 +89,13 @@ const MarketsRow = ({
       {/* Market Cap */}
 
       <td className="px-6 py-5 text-right text-[var(--app-text)]">
-        {formatLargeNumber(coin.market_cap)}
+        {formatLargeCurrency(coin.market_cap, currency)}
       </td>
 
       {/* Volume */}
 
       <td className="px-6 py-5 text-right text-[var(--app-soft)]">
-        {formatLargeNumber(coin.total_volume)}
+        {formatLargeCurrency(coin.total_volume, currency)}
       </td>
 
       {/* AI Score */}

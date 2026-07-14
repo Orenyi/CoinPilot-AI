@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import useCurrency from "./useCurrency";
 
 import {
   getWatchlist,
@@ -11,6 +12,7 @@ import { getCoinsByIds } from "../services/coinGeckoService";
 const useWatchlist = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { currency } = useCurrency();
 
   const loadWatchlist = useCallback(async () => {
     try {
@@ -28,7 +30,7 @@ const useWatchlist = () => {
       }
 
       // Fetch live market data from CoinGecko
-      const marketCoins = await getCoinsByIds(ids);
+      const marketCoins = await getCoinsByIds(ids, currency.toLowerCase());
 
       // Preserve watchlist record id if needed later
       const merged = marketCoins.map((coin) => {
@@ -46,7 +48,7 @@ const useWatchlist = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currency]);
 
   const addCoin = async (coinId) => {
     await addToWatchlist(coinId);

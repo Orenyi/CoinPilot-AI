@@ -8,29 +8,15 @@ import {
 
 import Sparkline from "../dashboard/charts/Sparkline";
 
-const formatCurrency = (value) => {
-  if (value == null) return "--";
-
-  return `$${Number(value).toLocaleString(undefined, {
-    maximumFractionDigits: value >= 1 ? 2 : 6,
-  })}`;
-};
-
-const formatLargeNumber = (value) => {
-  if (!value) return "--";
-
-  if (value >= 1_000_000_000_000)
-    return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
-
-  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
-
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-
-  return `$${Number(value).toLocaleString()}`;
-};
+import useCurrency from "../../hooks/useCurrency";
+import {
+  formatCurrency,
+  formatLargeCurrency,
+} from "../../utils/formatCurrency";
 
 const MobileWatchlistCard = ({ coin, index, onRemove, onCoinClick }) => {
   const positive = coin.price_change_percentage_24h >= 0;
+  const { currency } = useCurrency();
 
   const chartData =
     coin.sparkline_in_7d?.price?.map((price) => ({
@@ -101,7 +87,7 @@ const MobileWatchlistCard = ({ coin, index, onRemove, onCoinClick }) => {
           <p className="text-xs text-[var(--app-muted)]">Price</p>
 
           <h2 className="mt-1 text-xl font-bold text-[var(--app-text)]">
-            {formatCurrency(coin.current_price)}
+            {formatCurrency(coin.current_price, currency)}
           </h2>
         </div>
 
@@ -134,7 +120,7 @@ const MobileWatchlistCard = ({ coin, index, onRemove, onCoinClick }) => {
           <p className="text-xs text-[var(--app-muted)]">Market Cap</p>
 
           <p className="mt-1 font-semibold text-[var(--app-text)]">
-            {formatLargeNumber(coin.market_cap)}
+            {formatLargeCurrency(coin.market_cap, currency)}
           </p>
         </div>
 
@@ -142,7 +128,7 @@ const MobileWatchlistCard = ({ coin, index, onRemove, onCoinClick }) => {
           <p className="text-xs text-[var(--app-muted)]">Volume</p>
 
           <p className="mt-1 font-semibold text-[var(--app-text)]">
-            {formatLargeNumber(coin.total_volume)}
+            {formatLargeCurrency(coin.total_volume, currency)}
           </p>
         </div>
       </div>

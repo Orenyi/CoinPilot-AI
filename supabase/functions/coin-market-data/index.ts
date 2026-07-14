@@ -27,6 +27,7 @@ serve(async (req) => {
 
     // Read request body from Supabase invoke()
     const {
+      currency = "usd",
       search = "",
       category = "",
       sort = "market_cap_desc",
@@ -34,6 +35,8 @@ serve(async (req) => {
       perPage = 50,
       ids = [],
     } = req.method === "POST" ? await req.json() : {};
+
+    const selectedCurrency = currency.toLowerCase();
 
     const searchQuery = search.trim();
 
@@ -73,7 +76,7 @@ serve(async (req) => {
       }
 
       const marketResponse = await fetch(
-        `${BASE_URL}/coins/markets?vs_currency=usd&ids=${matchedIds}&sparkline=true&price_change_percentage=24h`,
+        `${BASE_URL}/coins/markets?vs_currency=${selectedCurrency}&ids=${matchedIds}&sparkline=true&price_change_percentage=24h`,
         { headers },
       );
 
@@ -93,7 +96,7 @@ serve(async (req) => {
       );
     }
 
-    marketUrl.searchParams.set("vs_currency", "usd");
+    marketUrl.searchParams.set("vs_currency", selectedCurrency);
     marketUrl.searchParams.set("sparkline", "true");
     marketUrl.searchParams.set("price_change_percentage", "24h");
 
@@ -178,7 +181,7 @@ serve(async (req) => {
 
     if (trendingIds) {
       const trendingMarketResponse = await fetch(
-        `${BASE_URL}/coins/markets?vs_currency=usd&ids=${trendingIds}&sparkline=true&price_change_percentage=24h`,
+        `${BASE_URL}/coins/markets?vs_currency=${selectedCurrency}&ids=${trendingIds}&sparkline=true&price_change_percentage=24h`,
         { headers },
       );
 

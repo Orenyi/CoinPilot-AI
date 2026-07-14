@@ -5,6 +5,7 @@ import { supabase } from "./supabase";
  */
 
 export const getMarketData = async ({
+  currency = "usd",
   search = "",
   category = "",
   sort = "market_cap_desc",
@@ -13,6 +14,7 @@ export const getMarketData = async ({
 } = {}) => {
   const { data, error } = await supabase.functions.invoke("coin-market-data", {
     body: {
+      currency,
       search,
       category,
       sort,
@@ -56,12 +58,13 @@ export const getTrendingCoins = async () => {
   return data.trending;
 };
 
-export const getCoinsByIds = async (ids = []) => {
+export const getCoinsByIds = async (ids = [], currency = "usd") => {
   if (!ids.length) return [];
 
   const { data, error } = await supabase.functions.invoke("coin-market-data", {
     body: {
       ids,
+      currency,
     },
   });
 
@@ -73,9 +76,10 @@ export const getCoinsByIds = async (ids = []) => {
   return data.coins;
 };
 
-export const searchCoins = async (query = "") => {
+export const searchCoins = async (query = "", currency = "usd") => {
   const { data, error } = await supabase.functions.invoke("coin-market-data", {
     body: {
+      currency,
       search: query,
       page: 1,
       perPage: 20,
