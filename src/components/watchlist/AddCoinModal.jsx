@@ -31,7 +31,19 @@ const AddCoinModal = ({ open, onClose, onAddCoin }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <div
+      className="
+fixed
+inset-0
+z-[999]
+flex
+items-center
+justify-center
+bg-slate-950/60
+backdrop-blur-sm
+p-4
+"
+    >
       <div
         className="
           w-full
@@ -51,7 +63,7 @@ const AddCoinModal = ({ open, onClose, onAddCoin }) => {
               Add Coin
             </h2>
 
-            <p className="mt-1 text-sm text-[var(--app-muted)]">
+            <p className="mt-1 text-sm text-[var(--app-text)]">
               Search and add cryptocurrencies to your watchlist.
             </p>
           </div>
@@ -65,7 +77,7 @@ const AddCoinModal = ({ open, onClose, onAddCoin }) => {
             className="
               rounded-xl
               p-2
-              text-[var(--app-muted)]
+              text-[var(--app-text)]
               transition
               hover:bg-[var(--app-bg)]
             "
@@ -85,7 +97,7 @@ const AddCoinModal = ({ open, onClose, onAddCoin }) => {
                 left-4
                 top-1/2
                 -translate-y-1/2
-                text-[var(--app-muted)]
+                text-[var(--app-text)]
               "
             />
 
@@ -160,7 +172,7 @@ const AddCoinModal = ({ open, onClose, onAddCoin }) => {
                         {coin.name}
                       </h3>
 
-                      <p className="text-xs uppercase text-[var(--app-muted)]">
+                      <p className="text-xs uppercase text-[var(--app-text)]">
                         {coin.symbol}
                       </p>
                     </div>

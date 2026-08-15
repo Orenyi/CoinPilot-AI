@@ -11,6 +11,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
 import WatchlistPage from "./pages/WatchlistPage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -58,6 +59,9 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/watchlist" element={<WatchlistPage />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/portfolio" element={<PortfolioPage />} />
         </Route>
 
         {/* 404 */}

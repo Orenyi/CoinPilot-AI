@@ -93,3 +93,28 @@ export const searchCoins = async (query = "", currency = "usd") => {
 
   return data.coins ?? [];
 };
+
+export const getCoinsPage = async (
+  page = 1,
+  perPage = 50,
+  currency = "usd",
+) => {
+  const { data, error } = await supabase.functions.invoke("coin-market-data", {
+    body: {
+      currency,
+      page,
+      perPage,
+      sort: "market_cap_desc",
+    },
+  });
+
+  if (error) {
+    console.error(error);
+    throw new Error(error.message || "Failed to fetch coins.");
+  }
+
+  return {
+    coins: data.coins ?? [],
+    pagination: data.pagination ?? null,
+  };
+};

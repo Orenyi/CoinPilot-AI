@@ -43,6 +43,7 @@ serve(async (req) => {
     const marketUrl = new URL(`${BASE_URL}/coins/markets`);
 
     // Live search for any coin
+    // Search for any CoinGecko-listed coin
     if (searchQuery && ids.length === 0) {
       const searchResponse = await fetch(
         `${BASE_URL}/search?query=${encodeURIComponent(searchQuery)}`,
@@ -50,17 +51,25 @@ serve(async (req) => {
       );
 
       if (!searchResponse.ok) {
-        throw new Error("Search failed.");
+        throw new Error(
+          `CoinGecko search failed: ${searchResponse.status}`,
+        );
       }
 
       const searchResults = await searchResponse.json();
+      console.log("SEARCH QUERY:", searchQuery);
+      console.log("SEARCH RESPONSE:", JSON.stringify(searchResults));
 
-      const matchedIds = searchResults.coins
-        .slice(0, 20)
+      const searchCoins = Array.isArray(searchResults?.coins)
+        ? searchResults.coins
+        : [];
+
+      const matchedIds = searchCoins
+        .slice(0, 50)
         .map((coin: any) => coin.id)
-        .join(",");
+        .filter(Boolean);
 
-      if (!matchedIds) {
+      if (matchedIds.length === 0) {
         return new Response(
           JSON.stringify({
             success: true,
@@ -75,10 +84,22 @@ serve(async (req) => {
         );
       }
 
+      const marketUrl = new URL(`${BASE_URL}/coins/markets`);
+
+      marketUrl.searchParams.set("vs_currency", selectedCurrency);
+      marketUrl.searchParams.set("ids", matchedIds.join(","));
+      marketUrl.searchParams.set("price_change_percentage", "24h");
+
       const marketResponse = await fetch(
-        `${BASE_URL}/coins/markets?vs_currency=${selectedCurrency}&ids=${matchedIds}&sparkline=true&price_change_percentage=24h`,
+        marketUrl.toString(),
         { headers },
       );
+
+      if (!marketResponse.ok) {
+        throw new Error(
+          `CoinGecko market search failed: ${marketResponse.status}`,
+        );
+      }
 
       const coins = await marketResponse.json();
 

@@ -76,3 +76,96 @@ export async function getPortfolioPrices(
         coins.map((coin) => [coin.id, coin]),
     );
 }
+
+export async function getCurrentExchangeRates(): Promise<
+    Record<string, number>
+> {
+    const apiKey = Deno.env.get("CURRENCY_API_KEY");
+
+    if (!apiKey) {
+        throw new Error("CURRENCY_API_KEY is not configured.");
+    }
+
+    const currencies = [
+        "EUR",
+        "GBP",
+        "NGN",
+        "CAD",
+        "AUD",
+        "JPY",
+        "INR",
+        "CNY",
+    ];
+
+    const url = "https://api.currencyapi.com/v3/latest" +
+        `?base_currency=USD&currencies=${currencies.join(",")}`;
+
+    const response = await fetch(url, {
+        headers: {
+            apikey: apiKey,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Current FX request failed: ${response.status} ${response.statusText}`,
+        );
+    }
+
+    const data = await response.json();
+
+    return {
+        usd: 1,
+        ...Object.fromEntries(
+            Object.entries(data.data ?? {}).map(
+                ([code, value]) => [
+                    code.toLowerCase(),
+                    (value as { value: number }).value,
+                ],
+            ),
+        ),
+    };
+}
+
+export async function getHistoricalFxRateToUsd(
+    currency: string,
+    date: string,
+): Promise<number> {
+    const normalizedCurrency = currency.toUpperCase();
+
+    if (normalizedCurrency === "USD") {
+        return 1;
+    }
+
+    const apiKey = Deno.env.get("CURRENCY_API_KEY");
+
+    if (!apiKey) {
+        throw new Error("CURRENCY_API_KEY is not configured.");
+    }
+
+    const url = `https://api.currencyapi.com/v3/historical` +
+        `?apikey=${encodeURIComponent(apiKey)}` +
+        `&base_currency=USD` +
+        `&currencies=${normalizedCurrency}` +
+        `&date=${date}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(
+            `Historical FX request failed: ${response.status} ${response.statusText}`,
+        );
+    }
+
+    const data = await response.json();
+
+    const rate = data?.data?.[normalizedCurrency]?.value;
+
+    if (typeof rate !== "number" || rate <= 0) {
+        throw new Error(
+            `Historical FX rate unavailable for ${normalizedCurrency} on ${date}.`,
+        );
+    }
+
+    return rate;
+}

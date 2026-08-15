@@ -1,9 +1,23 @@
 import { PortfolioRequest } from "./types.ts";
 import { validateAddAsset, validateUpdateAsset } from "./validators.ts";
-import { getPortfolioPrices } from "./coingecko.ts";
+import {
+    getCurrentExchangeRates,
+    getHistoricalFxRateToUsd,
+    getPortfolioPrices,
+} from "./coingecko.ts";
 import { calculatePortfolio } from "./calculations.ts";
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Database } from "../../../src/types/database.types.ts";
+
+type PortfolioAssetInsert =
+    Database["public"]["Tables"]["portfolio_assets"]["Insert"];
+
+type PortfolioAssetUpdate =
+    Database["public"]["Tables"]["portfolio_assets"]["Update"];
+
+// -----------------------------
+// Add Portfolio Asset
+// -----------------------------
 
 export async function addAsset(
     supabase: SupabaseClient<Database>,
@@ -11,16 +25,26 @@ export async function addAsset(
     body: PortfolioRequest,
 ) {
     validateAddAsset(body);
+    const buyCurrency = (body.buyCurrency ?? "usd").toLowerCase();
+
+    const buyFxRateToUsd = await getHistoricalFxRateToUsd(
+        buyCurrency,
+        body.buyDate!,
+    );
+
+    const asset: PortfolioAssetInsert = {
+        user_id: userId,
+        coin_id: body.coinId!,
+        quantity: body.quantity!,
+        buy_price: body.buyPrice!,
+        buy_currency: buyCurrency,
+        buy_fx_rate_to_usd: buyFxRateToUsd,
+        buy_date: body.buyDate!,
+    };
 
     const { data, error } = await supabase
         .from("portfolio_assets")
-        .insert({
-            user_id: userId,
-            coin_id: body.coinId,
-            quantity: Number(body.quantity),
-            buy_price: Number(body.buyPrice),
-            buy_date: body.buyDate,
-        })
+        .insert(asset)
         .select()
         .single();
 
@@ -30,6 +54,10 @@ export async function addAsset(
 
     return data;
 }
+
+// -----------------------------
+// List Portfolio Assets
+// -----------------------------
 
 export async function listAssets(
     supabase: SupabaseClient<Database>,
@@ -49,6 +77,10 @@ export async function listAssets(
     if (error) {
         throw error;
     }
+
+    // -----------------------------
+    // Empty Portfolio
+    // -----------------------------
 
     if (!assets || assets.length === 0) {
         return {
@@ -81,7 +113,11 @@ export async function listAssets(
     // Collect Coin IDs
     // -----------------------------
 
-    const coinIds = [...new Set(assets.map((asset) => asset.coin_id))];
+    const coinIds = [
+        ...new Set(
+            assets.map((asset) => asset.coin_id),
+        ),
+    ];
 
     // -----------------------------
     // Fetch Live Prices
@@ -92,6 +128,8 @@ export async function listAssets(
         currency,
     );
 
+    const exchangeRates = await getCurrentExchangeRates();
+
     // -----------------------------
     // Calculate Portfolio
     // -----------------------------
@@ -99,8 +137,14 @@ export async function listAssets(
     return calculatePortfolio(
         assets,
         marketData,
+        currency,
+        exchangeRates,
     );
 }
+
+// -----------------------------
+// Update Portfolio Asset
+// -----------------------------
 
 export async function updateAsset(
     supabase: SupabaseClient<Database>,
@@ -109,16 +153,29 @@ export async function updateAsset(
 ) {
     validateUpdateAsset(body);
 
+    const buyCurrency = (
+        body.buyCurrency ?? "usd"
+    ).toLowerCase();
+
+    const buyFxRateToUsd = await getHistoricalFxRateToUsd(
+        buyCurrency,
+        body.buyDate!,
+    );
+
+    const updates: PortfolioAssetUpdate = {
+        coin_id: body.coinId!,
+        quantity: body.quantity!,
+        buy_price: body.buyPrice!,
+        buy_currency: buyCurrency,
+        buy_fx_rate_to_usd: buyFxRateToUsd,
+        buy_date: body.buyDate!,
+        updated_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
         .from("portfolio_assets")
-        .update({
-            coin_id: body.coinId,
-            quantity: body.quantity,
-            buy_price: body.buyPrice,
-            buy_date: body.buyDate,
-            updated_at: new Date().toISOString(),
-        })
-        .eq("id", body.assetId)
+        .update(updates)
+        .eq("id", body.assetId!)
         .eq("user_id", userId)
         .select()
         .single();
@@ -133,6 +190,10 @@ export async function updateAsset(
 
     return data;
 }
+
+// -----------------------------
+// Delete Portfolio Asset
+// -----------------------------
 
 export async function deleteAsset(
     supabase: SupabaseClient<Database>,

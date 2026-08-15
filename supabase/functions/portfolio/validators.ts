@@ -28,7 +28,11 @@ export function validateCurrency(
 
     const normalized = currency.toLowerCase();
 
-    if (!VALID_CURRENCIES.includes(normalized)) {
+    if (
+        !VALID_CURRENCIES.includes(
+            normalized as typeof VALID_CURRENCIES[number],
+        )
+    ) {
         throw new Error("Unsupported currency.");
     }
 
@@ -69,6 +73,9 @@ function validateAssetFields(data: PortfolioRequest): void {
     if (!data.buyDate) {
         throw new Error("Buy date is required.");
     }
+
+    // Validate the currency used for the original purchase.
+    validateCurrency(data.buyCurrency);
 }
 
 export function validateAddAsset(
