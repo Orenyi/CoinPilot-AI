@@ -12,6 +12,7 @@ import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
 import WatchlistPage from "./pages/WatchlistPage";
 import PortfolioPage from "./pages/PortfolioPage";
+import CoinDetailsPage from "./pages/CoinDetailsPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -31,6 +32,7 @@ const App = () => {
     "/news",
     "/alerts",
     "/settings",
+    "/coin",
   ];
 
   const hideNavbar = hideNavbarRoutes.some((route) =>
@@ -54,14 +56,21 @@ const App = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route path="/markets" element={<MarketsPage />} />
         </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route path="/watchlist" element={<WatchlistPage />} />
         </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route path="/portfolio" element={<PortfolioPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/coin/:id" element={<CoinDetailsPage />} />
         </Route>
 
         {/* 404 */}
