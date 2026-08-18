@@ -16,16 +16,27 @@ import {
   calculateSMA,
   calculateBollingerBands,
   calculateVWAP,
+  calculateRSI,
+  calculateMACD,
+  calculateStochastic,
 } from "../../utils/chart/indicators";
 
 import useCoinChart from "../../hooks/useCoinChart";
 
 import ChartToolbar from "./ChartToolbar";
 
+import { getCoinChart } from "../../services/coinChartService";
+
+import { normalizeMarketChart } from "../../utils/chart/chartFormatters";
+
+import CompareCoinModal from "./CompareCoinModal";
+
 const CoinMarketChart = ({ coin, currency = "usd" }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const mainSeriesRef = useRef(null);
+  const indicatorSeriesRef = useRef([]);
+  const volumeSeriesRef = useRef(null);
 
   const [chartType, setChartType] = useState("candles");
 
@@ -36,6 +47,14 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
   const [indicator, setIndicator] = useState(null);
 
   const [drawingTool, setDrawingTool] = useState(null);
+
+  const comparisonSeriesRef = useRef(null);
+
+  const [compareCoin, setCompareCoin] = useState(null);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
+  const [compareData, setCompareData] = useState([]);
+  const [compareLoading, setCompareLoading] = useState(false);
 
   const timeframeConfig = TIMEFRAMES.find((item) => item.label === timeframe);
 
@@ -239,10 +258,19 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
     }
 
     mainSeriesRef.current = series;
-
     // ==========================================
     // VOLUME
     // ==========================================
+
+    if (volumeSeriesRef.current) {
+      try {
+        chart.removeSeries(volumeSeriesRef.current);
+      } catch {
+        // Series may already have been removed.
+      }
+
+      volumeSeriesRef.current = null;
+    }
 
     if (showVolume) {
       const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -269,7 +297,7 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
           return {
             time: item.time,
 
-            value: item.volume ?? 0,
+            value: Number(item.volume ?? 0),
 
             color:
               item.close >= previous
@@ -278,6 +306,8 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
           };
         }),
       );
+
+      volumeSeriesRef.current = volumeSeries;
     }
 
     chart.timeScale().fitContent();
@@ -290,58 +320,96 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
   useEffect(() => {
     const chart = chartRef.current;
 
-    if (!chart || !mainSeriesRef.current) {
-      return;
-    }
+    if (!chart || !mainSeriesRef.current) return;
 
-    if (!indicator) return;
+    // Remove previous indicator series
+    indicatorSeriesRef.current.forEach((series) => {
+      try {
+        chart.removeSeries(series);
+      } catch {
+        // Series may already have been removed.
+      }
+    });
 
-    let indicatorSeries;
+    indicatorSeriesRef.current = [];
 
-    if (indicator === "Moving Average" || indicator === "SMA") {
-      indicatorSeries = chart.addSeries(LineSeries, {
+    if (!indicator || !ohlcData.length) return;
+
+    const addIndicatorSeries = (options, paneIndex = 0) => {
+      const series = chart.addSeries(LineSeries, options, paneIndex);
+
+      indicatorSeriesRef.current.push(series);
+
+      return series;
+    };
+
+    // ==========================================
+    // SMA
+    // ==========================================
+
+    if (indicator === "SMA" || indicator === "Moving Average") {
+      const series = addIndicatorSeries({
         color: "#8b5cf6",
-        lineWidth: 1,
+        lineWidth: 2,
         priceLineVisible: false,
         lastValueVisible: false,
       });
 
-      indicatorSeries.setData(calculateSMA(ohlcData, 20));
+      series.setData(calculateSMA(ohlcData, 20));
     }
+
+    // ==========================================
+    // EMA
+    // ==========================================
 
     if (indicator === "EMA") {
-      indicatorSeries = chart.addSeries(LineSeries, {
+      const series = addIndicatorSeries({
         color: "#f59e0b",
-        lineWidth: 1,
+        lineWidth: 2,
         priceLineVisible: false,
         lastValueVisible: false,
       });
 
-      indicatorSeries.setData(calculateEMA(ohlcData, 20));
+      series.setData(calculateEMA(ohlcData, 20));
     }
+
+    // ==========================================
+    // VWAP
+    // ==========================================
 
     if (indicator === "VWAP") {
-      indicatorSeries = chart.addSeries(LineSeries, {
+      const series = addIndicatorSeries({
         color: "#06b6d4",
-        lineWidth: 1,
+        lineWidth: 2,
         priceLineVisible: false,
         lastValueVisible: false,
       });
 
-      indicatorSeries.setData(calculateVWAP(ohlcData));
+      series.setData(calculateVWAP(ohlcData));
     }
+
+    // ==========================================
+    // BOLLINGER BANDS
+    // ==========================================
 
     if (indicator === "Bollinger Bands") {
       const bands = calculateBollingerBands(ohlcData, 20, 2);
 
-      const upper = chart.addSeries(LineSeries, {
+      const upper = addIndicatorSeries({
         color: "#8b5cf6",
         lineWidth: 1,
         priceLineVisible: false,
         lastValueVisible: false,
       });
 
-      const lower = chart.addSeries(LineSeries, {
+      const middle = addIndicatorSeries({
+        color: "rgba(139,92,246,0.5)",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+
+      const lower = addIndicatorSeries({
         color: "#8b5cf6",
         lineWidth: 1,
         priceLineVisible: false,
@@ -355,6 +423,13 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
         })),
       );
 
+      middle.setData(
+        bands.map((item) => ({
+          time: item.time,
+          value: item.middle,
+        })),
+      );
+
       lower.setData(
         bands.map((item) => ({
           time: item.time,
@@ -363,12 +438,232 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
       );
     }
 
+    // ==========================================
+    // RSI
+    // ==========================================
+
+    if (indicator === "RSI") {
+      const series = addIndicatorSeries(
+        {
+          color: "#a855f7",
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: true,
+        },
+        1,
+      );
+
+      series.setData(calculateRSI(ohlcData, 14));
+
+      series.createPriceLine({
+        price: 70,
+        color: "#ef4444",
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: false,
+        title: "70",
+      });
+
+      series.createPriceLine({
+        price: 30,
+        color: "#22c55e",
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: false,
+        title: "30",
+      });
+
+      chart.panes()[1]?.setHeight(120);
+    }
+
+    // ==========================================
+    // STOCHASTIC
+    // ==========================================
+
+    if (indicator === "Stochastic") {
+      const series = addIndicatorSeries(
+        {
+          color: "#06b6d4",
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: true,
+        },
+        1,
+      );
+
+      series.setData(calculateStochastic(ohlcData, 14));
+
+      series.createPriceLine({
+        price: 80,
+        color: "#ef4444",
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: false,
+        title: "80",
+      });
+
+      series.createPriceLine({
+        price: 20,
+        color: "#22c55e",
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: false,
+        title: "20",
+      });
+
+      chart.panes()[1]?.setHeight(120);
+    }
+
+    // ==========================================
+    // MACD
+    // ==========================================
+
+    if (indicator === "MACD") {
+      const macdData = calculateMACD(ohlcData, 12, 26, 9);
+
+      const macdSeries = addIndicatorSeries(
+        {
+          color: "#8b5cf6",
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: true,
+        },
+        1,
+      );
+
+      const signalSeries = addIndicatorSeries(
+        {
+          color: "#f59e0b",
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: true,
+        },
+        1,
+      );
+
+      macdSeries.setData(
+        macdData.map((item) => ({
+          time: item.time,
+          value: item.macd,
+        })),
+      );
+
+      signalSeries.setData(
+        macdData.map((item) => ({
+          time: item.time,
+          value: item.signal,
+        })),
+      );
+
+      chart.panes()[1]?.setHeight(140);
+    }
+
     return () => {
-      if (indicatorSeries) {
-        chart.removeSeries(indicatorSeries);
+      indicatorSeriesRef.current.forEach((series) => {
+        try {
+          chart.removeSeries(series);
+        } catch {
+          // Ignore already removed series.
+        }
+      });
+
+      indicatorSeriesRef.current = [];
+    };
+  }, [indicator, ohlcData, chartType]);
+
+  // ==========================================
+  // COMPARE COIN DATA
+  // ==========================================
+
+  useEffect(() => {
+    const fetchComparison = async () => {
+      if (!compareCoin?.id) {
+        setCompareData([]);
+        return;
+      }
+
+      try {
+        setCompareLoading(true);
+
+        const response = await getCoinChart({
+          coinId: compareCoin.id,
+          currency,
+          days: timeframeConfig?.days ?? "1",
+          type: "market",
+        });
+
+        const normalized = normalizeMarketChart(response);
+
+        setCompareData(normalized);
+      } catch (error) {
+        console.error("[CoinMarketChart] Compare error:", error);
+        setCompareData([]);
+      } finally {
+        setCompareLoading(false);
       }
     };
-  }, [indicator, ohlcData]);
+
+    fetchComparison();
+  }, [compareCoin?.id, currency, timeframeConfig?.days]);
+
+  // ==========================================
+  // COMPARISON SERIES
+  // ==========================================
+
+  useEffect(() => {
+    const chart = chartRef.current;
+
+    if (!chart) return;
+
+    // Remove previous comparison line
+    if (comparisonSeriesRef.current) {
+      try {
+        chart.removeSeries(comparisonSeriesRef.current);
+      } catch {
+        // Already removed
+      }
+
+      comparisonSeriesRef.current = null;
+    }
+
+    if (!compareCoin || !compareData.length) return;
+
+    const firstPrice = compareData[0]?.close;
+
+    if (!firstPrice) return;
+
+    // Normalize comparison to percentage performance
+    // so Bitcoin vs Ethereum is meaningful regardless
+    // of their different absolute prices.
+    const normalizedComparison = compareData.map((item) => ({
+      time: item.time,
+      value: ((item.close - firstPrice) / firstPrice) * 100,
+    }));
+
+    const series = chart.addSeries(LineSeries, {
+      color: "#f59e0b",
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      title: compareCoin.symbol?.toUpperCase() || "COMPARE",
+    });
+
+    series.setData(normalizedComparison);
+
+    comparisonSeriesRef.current = series;
+
+    return () => {
+      if (comparisonSeriesRef.current) {
+        try {
+          chart.removeSeries(comparisonSeriesRef.current);
+        } catch {
+          // Ignore
+        }
+
+        comparisonSeriesRef.current = null;
+      }
+    };
+  }, [compareCoin, compareData]);
 
   if (!coin) return null;
 
@@ -394,7 +689,7 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
         showVolume={showVolume}
         setShowVolume={setShowVolume}
         onCompare={() => {
-          console.log("Compare clicked");
+          setShowCompareModal(true);
         }}
         onSettings={() => {
           console.log("Chart settings clicked");
@@ -449,6 +744,18 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
           "
         />
       </div>
+      {showCompareModal && (
+        <CompareCoinModal
+          currentCoin={coin}
+          onSelect={(selectedCoin) => {
+            setCompareCoin(selectedCoin);
+            setShowCompareModal(false);
+          }}
+          onClose={() => {
+            setShowCompareModal(false);
+          }}
+        />
+      )}
     </section>
   );
 };

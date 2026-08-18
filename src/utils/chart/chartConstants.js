@@ -36,7 +36,6 @@ export const INDICATORS = [
   "RSI",
   "MACD",
   "Bollinger Bands",
-  "Volume",
   "VWAP",
   "Stochastic",
 ];

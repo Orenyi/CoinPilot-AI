@@ -59,21 +59,19 @@ serve(async (req) => {
         // API KEY
         // ==========================================
 
-        const apiKey = Deno.env.get(
-            "COINGECKO_API_KEY",
-        );
+        const apiKey = Deno.env.get("COINGECKO_API_KEY");
 
         if (!apiKey) {
-            throw new Error(
-                "COINGECKO_API_KEY is not configured.",
-            );
+            throw new Error("COINGECKO_API_KEY is not configured.");
         }
 
         // ==========================================
         // CACHE KEY
+        // v2 prevents old OHLC-only cache from being
+        // returned after this pipeline change.
         // ==========================================
 
-        const cacheKey = `${id}:${currency}:${days}:${type}`;
+        const cacheKey = `v2:${id}:${currency}:${days}:${type}`;
 
         // ==========================================
         // CHECK CACHE
@@ -81,13 +79,8 @@ serve(async (req) => {
 
         const { data: cached, error: cacheError } = await supabase
             .from("coin_chart_cache")
-            .select(
-                "payload, expires_at",
-            )
-            .eq(
-                "cache_key",
-                cacheKey,
-            )
+            .select("payload, expires_at")
+            .eq("cache_key", cacheKey)
             .maybeSingle();
 
         if (cacheError) {
@@ -99,8 +92,7 @@ serve(async (req) => {
 
         if (
             cached &&
-            new Date(cached.expires_at).getTime() >
-                Date.now()
+            new Date(cached.expires_at).getTime() > Date.now()
         ) {
             return new Response(
                 JSON.stringify({
@@ -119,49 +111,203 @@ serve(async (req) => {
         }
 
         // ==========================================
-        // COINGECKO ENDPOINT
+        // COINGECKO HEADERS
         // ==========================================
 
-        const endpoint = type === "ohlc"
-            ? `${COINGECKO_BASE_URL}/coins/${
-                encodeURIComponent(
-                    id,
-                )
-            }/ohlc`
-            : `${COINGECKO_BASE_URL}/coins/${
-                encodeURIComponent(
-                    id,
-                )
-            }/market_chart`;
+        const headers = {
+            accept: "application/json",
+            "x-cg-demo-api-key": apiKey,
+        };
 
-        const url = new URL(endpoint);
+        // ==========================================
+        // OHLC REQUEST
+        //
+        // OHLC endpoint gives:
+        // [timestamp, open, high, low, close]
+        //
+        // market_chart gives:
+        // prices + total_volumes
+        //
+        // We combine them so every OHLC candle
+        // receives real volume.
+        // ==========================================
 
-        url.searchParams.set(
-            "vs_currency",
-            currency,
+        if (type === "ohlc") {
+            const ohlcUrl = new URL(
+                `${COINGECKO_BASE_URL}/coins/${encodeURIComponent(id)}/ohlc`,
+            );
+
+            ohlcUrl.searchParams.set("vs_currency", currency);
+            ohlcUrl.searchParams.set("days", String(days));
+
+            const marketUrl = new URL(
+                `${COINGECKO_BASE_URL}/coins/${
+                    encodeURIComponent(id)
+                }/market_chart`,
+            );
+
+            marketUrl.searchParams.set("vs_currency", currency);
+            marketUrl.searchParams.set("days", String(days));
+
+            const [ohlcResponse, marketResponse] = await Promise.all([
+                fetch(ohlcUrl.toString(), {
+                    headers,
+                }),
+
+                fetch(marketUrl.toString(), {
+                    headers,
+                }),
+            ]);
+
+            // ==========================================
+            // API FAILURE
+            // ==========================================
+
+            if (!ohlcResponse.ok || !marketResponse.ok) {
+                if (cached?.payload) {
+                    return new Response(
+                        JSON.stringify({
+                            success: true,
+                            source: "stale-cache",
+                            data: cached.payload,
+                        }),
+                        {
+                            status: 200,
+                            headers: {
+                                ...corsHeaders,
+                                "Content-Type": "application/json",
+                            },
+                        },
+                    );
+                }
+
+                const failedResponse = !ohlcResponse.ok
+                    ? ohlcResponse
+                    : marketResponse;
+
+                throw new Error(
+                    `CoinGecko request failed: ${failedResponse.status} ${failedResponse.statusText}`,
+                );
+            }
+
+            const [ohlcData, marketData] = await Promise.all([
+                ohlcResponse.json(),
+                marketResponse.json(),
+            ]);
+
+            // ==========================================
+            // REAL VOLUME DATA
+            // ==========================================
+
+            const volumes = marketData?.total_volumes ?? [];
+
+            // ==========================================
+            // MERGE OHLC + VOLUME
+            // ==========================================
+
+            const combinedData = (ohlcData ?? []).map(
+                ([timestamp, open, high, low, close]: [
+                    number,
+                    number,
+                    number,
+                    number,
+                    number,
+                ]) => {
+                    const nearestVolume = findNearestVolume(
+                        timestamp,
+                        volumes,
+                    );
+
+                    return [
+                        timestamp,
+                        open,
+                        high,
+                        low,
+                        close,
+                        nearestVolume,
+                    ];
+                },
+            );
+
+            const chartData = {
+                ohlc: combinedData,
+            };
+
+            // ==========================================
+            // SAVE CACHE
+            // ==========================================
+
+            const expiresAt = new Date(
+                Date.now() + 5 * 60 * 1000,
+            ).toISOString();
+
+            const { error: cacheWriteError } = await supabase
+                .from("coin_chart_cache")
+                .upsert(
+                    {
+                        cache_key: cacheKey,
+                        coin_id: id,
+                        currency,
+                        days: String(days),
+                        chart_type: type,
+                        payload: chartData,
+                        expires_at: expiresAt,
+                        updated_at: new Date().toISOString(),
+                    },
+                    {
+                        onConflict: "cache_key",
+                    },
+                );
+
+            if (cacheWriteError) {
+                console.error(
+                    "[coin-chart] Cache write error:",
+                    cacheWriteError,
+                );
+            }
+
+            return new Response(
+                JSON.stringify({
+                    success: true,
+                    source: "coingecko",
+                    data: chartData,
+                }),
+                {
+                    status: 200,
+                    headers: {
+                        ...corsHeaders,
+                        "Content-Type": "application/json",
+                    },
+                },
+            );
+        }
+
+        // ==========================================
+        // MARKET CHART REQUEST
+        // Used by line / area charts.
+        // ==========================================
+
+        const marketUrl = new URL(
+            `${COINGECKO_BASE_URL}/coins/${
+                encodeURIComponent(id)
+            }/market_chart`,
         );
 
-        url.searchParams.set(
-            "days",
-            days,
-        );
-
-        // ==========================================
-        // COINGECKO REQUEST
-        // ==========================================
+        marketUrl.searchParams.set("vs_currency", currency);
+        marketUrl.searchParams.set("days", String(days));
 
         const response = await fetch(
-            url.toString(),
+            marketUrl.toString(),
             {
-                headers: {
-                    accept: "application/json",
-                    "x-cg-demo-api-key": apiKey,
-                },
+                headers,
             },
         );
 
+        // ==========================================
+        // MARKET API FAILURE
+        // ==========================================
+
         if (!response.ok) {
-            // Return stale cache if available
             if (cached?.payload) {
                 return new Response(
                     JSON.stringify({
@@ -260,3 +406,32 @@ serve(async (req) => {
         );
     }
 });
+
+// ==========================================
+// FIND CLOSEST VOLUME POINT
+// ==========================================
+
+function findNearestVolume(
+    timestamp: number,
+    volumes: [number, number][],
+) {
+    if (!volumes.length) return 0;
+
+    let closest = volumes[0];
+    let smallestDifference = Math.abs(timestamp - closest[0]);
+
+    for (let i = 1; i < volumes.length; i++) {
+        const current = volumes[i];
+
+        const difference = Math.abs(
+            timestamp - current[0],
+        );
+
+        if (difference < smallestDifference) {
+            closest = current;
+            smallestDifference = difference;
+        }
+    }
+
+    return Number(closest[1] ?? 0);
+}

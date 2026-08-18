@@ -133,3 +133,92 @@ export const calculateVWAP = (data) => {
     };
   });
 };
+
+export const calculateMACD = (
+  data,
+  fastPeriod = 12,
+  slowPeriod = 26,
+  signalPeriod = 9,
+) => {
+  if (data.length < slowPeriod + signalPeriod) return [];
+
+  const fastEMA = calculateEMA(data, fastPeriod);
+  const slowEMA = calculateEMA(data, slowPeriod);
+
+  const fastMap = new Map(fastEMA.map((item) => [item.time, item.value]));
+  const slowMap = new Map(slowEMA.map((item) => [item.time, item.value]));
+
+  const macd = [];
+
+  for (const item of data) {
+    const fast = fastMap.get(item.time);
+    const slow = slowMap.get(item.time);
+
+    if (fast === undefined || slow === undefined) continue;
+
+    macd.push({
+      time: item.time,
+      value: fast - slow,
+    });
+  }
+
+  if (macd.length < signalPeriod) return [];
+
+  const signalValues = [];
+
+  const multiplier = 2 / (signalPeriod + 1);
+
+  let previous =
+    macd.slice(0, signalPeriod).reduce((sum, item) => sum + item.value, 0) /
+    signalPeriod;
+
+  signalValues.push({
+    time: macd[signalPeriod - 1].time,
+    value: previous,
+  });
+
+  for (let i = signalPeriod; i < macd.length; i++) {
+    previous = (macd[i].value - previous) * multiplier + previous;
+
+    signalValues.push({
+      time: macd[i].time,
+      value: previous,
+    });
+  }
+
+  const signalMap = new Map(
+    signalValues.map((item) => [item.time, item.value]),
+  );
+
+  return macd
+    .filter((item) => signalMap.has(item.time))
+    .map((item) => ({
+      time: item.time,
+      macd: item.value,
+      signal: signalMap.get(item.time),
+      histogram: item.value - signalMap.get(item.time),
+    }));
+};
+
+export const calculateStochastic = (data, period = 14) => {
+  if (data.length < period) return [];
+
+  return data.slice(period - 1).map((_, index) => {
+    const end = period - 1 + index;
+
+    const slice = data.slice(end - period + 1, end + 1);
+
+    const highestHigh = Math.max(...slice.map((item) => item.high));
+
+    const lowestLow = Math.min(...slice.map((item) => item.low));
+
+    const range = highestHigh - lowestLow;
+
+    const k = range === 0 ? 50 : ((data[end].close - lowestLow) / range) * 100;
+
+    return {
+      time: data[end].time,
+      value: k,
+    };
+  });
+};
