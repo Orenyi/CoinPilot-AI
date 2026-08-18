@@ -24,6 +24,7 @@ import {
 import useCoinChart from "../../hooks/useCoinChart";
 
 import ChartToolbar from "./ChartToolbar";
+import DrawingManager from "./drawings/DrawingManager";
 
 import { getCoinChart } from "../../services/coinChartService";
 
@@ -55,6 +56,11 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
 
   const [compareData, setCompareData] = useState([]);
   const [compareLoading, setCompareLoading] = useState(false);
+
+  const [drawingApi, setDrawingApi] = useState(null);
+
+  const [chartInstance, setChartInstance] = useState(null);
+  const [mainSeries, setMainSeries] = useState(null);
 
   const timeframeConfig = TIMEFRAMES.find((item) => item.label === timeframe);
 
@@ -156,6 +162,7 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
     });
 
     chartRef.current = chart;
+    setChartInstance(chart);
 
     const resizeObserver = new ResizeObserver(() => {
       chart.applyOptions({
@@ -181,6 +188,8 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
       chart.removeSeries(mainSeriesRef.current);
 
       mainSeriesRef.current = null;
+
+      setMainSeries(null);
     }
 
     let series;
@@ -258,6 +267,9 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
     }
 
     mainSeriesRef.current = series;
+
+    setChartInstance(chart);
+    setMainSeries(series);
     // ==========================================
     // VOLUME
     // ==========================================
@@ -694,24 +706,25 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
         onSettings={() => {
           console.log("Chart settings clicked");
         }}
+        onClearDrawings={() => drawingApi?.clear()}
+        hasDrawings={Boolean(drawingApi?.drawings?.length)}
       />
 
       {/* ======================================
           CHART
       ======================================= */}
-
       <div className="relative px-1">
         {loading && (
           <div
             className="
-              absolute
-              inset-0
-              z-10
-              flex
-              items-center
-              justify-center
-              bg-[var(--app-card)]
-            "
+        absolute
+        inset-0
+        z-10
+        flex
+        items-center
+        justify-center
+        bg-[var(--app-card)]
+      "
           >
             <span className="text-xs text-[var(--app-muted)]">
               Loading chart...
@@ -722,14 +735,14 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
         {error && (
           <div
             className="
-              absolute
-              inset-0
-              z-10
-              flex
-              items-center
-              justify-center
-              bg-[var(--app-card)]
-            "
+        absolute
+        inset-0
+        z-10
+        flex
+        items-center
+        justify-center
+        bg-[var(--app-card)]
+      "
           >
             <span className="text-xs text-red-400">{error}</span>
           </div>
@@ -738,11 +751,20 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
         <div
           ref={chartContainerRef}
           className="
-            h-[280px]
-            w-full
-            sm:h-[390px]
-          "
+      h-[280px]
+      w-full
+      sm:h-[390px]
+    "
         />
+
+        {chartInstance && mainSeries && (
+          <DrawingManager
+            chart={chartInstance}
+            series={mainSeries}
+            drawingTool={drawingTool}
+            onDrawingsChange={setDrawingApi}
+          />
+        )}
       </div>
       {showCompareModal && (
         <CompareCoinModal

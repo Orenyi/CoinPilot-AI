@@ -144,7 +144,7 @@ const CoinDetailsPage = () => {
           py-5
           sm:px-6
           lg:px-8
-          lg:pl-[150px]
+          lg:pl-[120px]
         "
       >
         {/* =====================================

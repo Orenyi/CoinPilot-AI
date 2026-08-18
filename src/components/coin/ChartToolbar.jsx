@@ -33,6 +33,9 @@ const ChartToolbar = ({
 
   showVolume,
   setShowVolume,
+
+  onClearDrawings,
+  hasDrawings,
 }) => {
   return (
     <div
@@ -252,6 +255,34 @@ const ChartToolbar = ({
             />
           </div>
         </div>
+        {/* Clear Drawings */}
+
+        <button
+          type="button"
+          onClick={onClearDrawings}
+          disabled={!hasDrawings}
+          className="
+                hidden
+                h-8
+                items-center
+                rounded-md
+                border
+                border-[var(--app-border)]
+                bg-[var(--app-card-2)]
+                px-2.5
+                text-[11px]
+                font-medium
+                text-[var(--app-text)]
+                transition-all
+                hover:border-red-500
+                hover:text-red-400
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+                sm:flex
+              "
+        >
+          Clear
+        </button>
 
         {/* RIGHT CONTROLS */}
 
