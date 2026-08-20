@@ -4,9 +4,11 @@ class VerticalLineRenderer {
   }
 
   draw(target) {
-    const { x } = this.source;
+    const { x, height } = this.source;
 
-    if (x === null || x === undefined) return;
+    if (x === null || x === undefined) {
+      return;
+    }
 
     target.useBitmapCoordinateSpace((scope) => {
       const ctx = scope.context;
@@ -15,13 +17,14 @@ class VerticalLineRenderer {
       const verticalPixelRatio = scope.verticalPixelRatio;
 
       const lineX = x * horizontalPixelRatio;
-      const height = this.source.height * verticalPixelRatio;
+      const lineHeight = height * verticalPixelRatio;
 
       ctx.save();
 
       ctx.beginPath();
+
       ctx.moveTo(lineX, 0);
-      ctx.lineTo(lineX, height);
+      ctx.lineTo(lineX, lineHeight);
 
       ctx.strokeStyle = "#8b5cf6";
       ctx.lineWidth = 1.5 * horizontalPixelRatio;
@@ -32,7 +35,6 @@ class VerticalLineRenderer {
 
       ctx.setLineDash([]);
 
-      // Endpoint marker
       ctx.fillStyle = "#8b5cf6";
 
       ctx.beginPath();
@@ -88,13 +90,13 @@ export class VerticalLinePrimitive {
   }
 
   paneViews() {
-    if (!this._chart || !this._series || !this.point) {
+    if (!this._chart || !this.point) {
       return [];
     }
 
     const x = this._chart.timeScale().timeToCoordinate(this.point.time);
 
-    if (x === null) {
+    if (x === null || x === undefined) {
       return [];
     }
 
@@ -106,16 +108,11 @@ export class VerticalLinePrimitive {
     ];
   }
 
-  /*
-   * ==========================================
-   * UPDATE
-   * ==========================================
-   *
-   * Vertical Line is a one-point drawing.
-   * Only the latest point is required.
-   */
-
   update(_start, end) {
+    if (!end) {
+      return;
+    }
+
     this.point = end;
 
     this._requestUpdate?.();

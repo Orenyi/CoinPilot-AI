@@ -4,9 +4,9 @@ class HorizontalLineRenderer {
   }
 
   draw(target) {
-    const { x1, x2, y } = this.source;
+    const { y, width } = this.source;
 
-    if (x1 === null || x2 === null || y === null) {
+    if (y === null || y === undefined) {
       return;
     }
 
@@ -16,13 +16,15 @@ class HorizontalLineRenderer {
       const horizontalPixelRatio = scope.horizontalPixelRatio;
       const verticalPixelRatio = scope.verticalPixelRatio;
 
-      const startX = x1 * horizontalPixelRatio;
-      const endX = x2 * horizontalPixelRatio;
       const lineY = y * verticalPixelRatio;
+
+      const startX = 0;
+      const endX = width * horizontalPixelRatio;
 
       ctx.save();
 
       ctx.beginPath();
+
       ctx.moveTo(startX, lineY);
       ctx.lineTo(endX, lineY);
 
@@ -31,15 +33,19 @@ class HorizontalLineRenderer {
 
       ctx.stroke();
 
-      // Endpoint markers
+      // Left endpoint
       ctx.fillStyle = "#06b6d4";
 
       ctx.beginPath();
-      ctx.arc(startX, lineY, 4 * horizontalPixelRatio, 0, Math.PI * 2);
-      ctx.fill();
 
-      ctx.beginPath();
-      ctx.arc(endX, lineY, 4 * horizontalPixelRatio, 0, Math.PI * 2);
+      ctx.arc(
+        6 * horizontalPixelRatio,
+        lineY,
+        4 * horizontalPixelRatio,
+        0,
+        Math.PI * 2,
+      );
+
       ctx.fill();
 
       ctx.restore();
@@ -87,36 +93,19 @@ export class HorizontalLinePrimitive {
       return [];
     }
 
-    const timeScale = this._chart.timeScale();
-
-    const x1 = timeScale.timeToCoordinate(this.point.time);
-
-    const x2 = this._chart.width();
-
     const y = this._series.priceToCoordinate(this.point.price);
 
-    if (x1 === null || x2 === null || y === null) {
+    if (y === null) {
       return [];
     }
 
     return [
       new HorizontalLinePaneView({
-        x1,
-        x2,
         y,
+        width: this._chart.width(),
       }),
     ];
   }
-
-  /*
-   * ==========================================
-   * UPDATE
-   * ==========================================
-   *
-   * Horizontal Line is a one-point drawing.
-   * The price determines the Y position.
-   * The line extends across the chart.
-   */
 
   update(_start, end) {
     this.point = end;

@@ -5,14 +5,13 @@ import { HorizontalLinePrimitive } from "./primitives/HorizontalLinePrimitive";
 import { VerticalLinePrimitive } from "./primitives/VerticalLinePrimitive";
 import { PriceRangePrimitive } from "./primitives/PriceRangePrimitive";
 import { FibonacciPrimitive } from "./primitives/FibonacciPrimitive";
+import { SupportResistancePrimitive } from "./primitives/SupportResistancePrimitive";
 
 import {
   getDrawingPoint,
   requiresOnePoint,
   requiresTwoPoints,
 } from "./DrawingUtils";
-
-import { SupportResistancePrimitive } from "./primitives/SupportResistancePrimitive";
 
 const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
   const drawingsRef = useRef([]);
@@ -24,11 +23,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     previewPrimitive: null,
   });
 
-  /*
-   * ==========================================
-   * CREATE PRIMITIVE
-   * ==========================================
-   */
+  // ==========================================
+  // CREATE PRIMITIVE
+  // ==========================================
 
   const createPrimitive = useCallback((tool, start, end) => {
     switch (tool) {
@@ -36,10 +33,10 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
         return new TrendLinePrimitive(start, end);
 
       case "Horizontal Line":
-        return new HorizontalLinePrimitive(start);
+        return new HorizontalLinePrimitive(start, end);
 
       case "Vertical Line":
-        return new VerticalLinePrimitive(start);
+        return new VerticalLinePrimitive(end);
 
       case "Support / Resistance":
         return new SupportResistancePrimitive(start, end);
@@ -58,24 +55,21 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     }
   }, []);
 
-  /*
-   * ==========================================
-   * NOTIFY PARENT
-   * ==========================================
-   */
+  // ==========================================
+  // NOTIFY PARENT
+  // ==========================================
 
   const notifyDrawingsChange = useCallback(() => {
     onDrawingsChange?.({
       drawings: [...drawingsRef.current],
       clear: clearDrawings,
+      remove: removeDrawing,
     });
   }, [onDrawingsChange]);
 
-  /*
-   * ==========================================
-   * REMOVE PREVIEW
-   * ==========================================
-   */
+  // ==========================================
+  // REMOVE PREVIEW
+  // ==========================================
 
   const removePreview = useCallback(() => {
     const state = stateRef.current;
@@ -92,11 +86,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     state.preview = null;
   }, [series]);
 
-  /*
-   * ==========================================
-   * REMOVE INDIVIDUAL DRAWING
-   * ==========================================
-   */
+  // ==========================================
+  // REMOVE INDIVIDUAL DRAWING
+  // ==========================================
 
   const removeDrawing = useCallback(
     (drawingId) => {
@@ -121,11 +113,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     [series, notifyDrawingsChange],
   );
 
-  /*
-   * ==========================================
-   * CLEAR ALL DRAWINGS
-   * ==========================================
-   */
+  // ==========================================
+  // CLEAR ALL DRAWINGS
+  // ==========================================
 
   const clearDrawings = useCallback(() => {
     if (series) {
@@ -148,11 +138,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     notifyDrawingsChange();
   }, [series, removePreview, notifyDrawingsChange]);
 
-  /*
-   * ==========================================
-   * RESET ACTIVE DRAWING
-   * ==========================================
-   */
+  // ==========================================
+  // RESET DRAWING STATE
+  // ==========================================
 
   const resetDrawingState = useCallback(() => {
     const state = stateRef.current;
@@ -163,21 +151,17 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     state.start = null;
   }, [removePreview]);
 
-  /*
-   * ==========================================
-   * RESET WHEN DRAWING TOOL CHANGES
-   * ==========================================
-   */
+  // ==========================================
+  // RESET WHEN TOOL CHANGES
+  // ==========================================
 
   useEffect(() => {
     resetDrawingState();
   }, [drawingTool, resetDrawingState]);
 
-  /*
-   * ==========================================
-   * DRAWING INTERACTION
-   * ==========================================
-   */
+  // ==========================================
+  // DRAWING INTERACTION
+  // ==========================================
 
   useEffect(() => {
     if (!chart || !series || !drawingTool) {
@@ -186,16 +170,18 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
 
     const state = stateRef.current;
 
+    // ==========================================
+    // CLICK
+    // ==========================================
+
     const handleClick = (param) => {
       const point = getDrawingPoint(param, series);
 
       if (!point) return;
 
-      /*
-       * --------------------------------------
-       * ONE-POINT TOOLS
-       * --------------------------------------
-       */
+      // ========================================
+      // ONE-POINT TOOLS
+      // ========================================
 
       if (requiresOnePoint(drawingTool)) {
         const primitive = createPrimitive(drawingTool, point, point);
@@ -220,35 +206,37 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
         return;
       }
 
-      /*
-       * --------------------------------------
-       * FIRST CLICK
-       * --------------------------------------
-       */
+      // ========================================
+      // FIRST CLICK
+      // ========================================
 
       if (!state.active) {
         state.active = true;
         state.start = point;
+        state.preview = point;
 
         return;
       }
 
-      /*
-       * --------------------------------------
-       * SECOND CLICK
-       * --------------------------------------
-       */
+      // ========================================
+      // SECOND CLICK
+      // ========================================
 
       if (requiresTwoPoints(drawingTool)) {
-        const primitive = createPrimitive(drawingTool, state.start, point);
+        const start = state.start;
+        const end = point;
+
+        const primitive = createPrimitive(drawingTool, start, end);
 
         if (!primitive) {
           resetDrawingState();
           return;
         }
 
+        // Remove temporary preview.
         removePreview();
 
+        // Attach permanent drawing.
         series.attachPrimitive(primitive);
 
         drawingsRef.current = [
@@ -256,8 +244,8 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
           {
             id: crypto.randomUUID(),
             type: drawingTool,
-            start: state.start,
-            end: point,
+            start,
+            end,
             primitive,
           },
         ];
@@ -266,14 +254,13 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
 
         state.active = false;
         state.start = null;
+        state.preview = null;
       }
     };
 
-    /*
-     * ==========================================
-     * CROSSHAIR PREVIEW
-     * ==========================================
-     */
+    // ==========================================
+    // CROSSHAIR PREVIEW
+    // ==========================================
 
     const handleCrosshairMove = (param) => {
       if (!state.active || !state.start) {
@@ -286,11 +273,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
 
       state.preview = point;
 
-      /*
-       * ==========================================
-       * UPDATE EXISTING PREVIEW
-       * ==========================================
-       */
+      // ========================================
+      // UPDATE EXISTING PREVIEW
+      // ========================================
 
       if (state.previewPrimitive) {
         if (typeof state.previewPrimitive.update === "function") {
@@ -300,11 +285,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
         return;
       }
 
-      /*
-       * ==========================================
-       * CREATE PREVIEW ON FIRST MOVE
-       * ==========================================
-       */
+      // ========================================
+      // CREATE PREVIEW
+      // ========================================
 
       const previewPrimitive = createPrimitive(drawingTool, state.start, point);
 
@@ -334,11 +317,9 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
     resetDrawingState,
   ]);
 
-  /*
-   * ==========================================
-   * EXPOSE DRAWING API
-   * ==========================================
-   */
+  // ==========================================
+  // EXPOSE DRAWING API
+  // ==========================================
 
   useEffect(() => {
     if (!onDrawingsChange) return;
@@ -349,6 +330,7 @@ const DrawingManager = ({ chart, series, drawingTool, onDrawingsChange }) => {
       clear: clearDrawings,
     });
   }, [onDrawingsChange, removeDrawing, clearDrawings]);
+
   return null;
 };
 

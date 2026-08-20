@@ -7,6 +7,7 @@ import {
   createChart,
   HistogramSeries,
   LineSeries,
+  PriceScaleMode,
 } from "lightweight-charts";
 
 import { TIMEFRAMES } from "../../utils/chart/chartConstants";
@@ -39,6 +40,8 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
   const indicatorSeriesRef = useRef([]);
   const volumeSeriesRef = useRef(null);
 
+  const settingsRef = useRef(null);
+
   const [chartType, setChartType] = useState("candles");
 
   const [timeframe, setTimeframe] = useState("1D");
@@ -48,6 +51,15 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
   const [indicator, setIndicator] = useState(null);
 
   const [drawingTool, setDrawingTool] = useState(null);
+
+  const [showChartSettings, setShowChartSettings] = useState(false);
+
+  const [chartSettings, setChartSettings] = useState({
+    scale: "price",
+    logScale: false,
+    autoScale: true,
+    appearance: "dark",
+  });
 
   const comparisonSeriesRef = useRef(null);
 
@@ -61,6 +73,26 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
 
   const [chartInstance, setChartInstance] = useState(null);
   const [mainSeries, setMainSeries] = useState(null);
+
+  // ==========================================
+  // CLOSE SETTINGS WHEN CLICKING OUTSIDE
+  // ==========================================
+
+  useEffect(() => {
+    if (!showChartSettings) return;
+
+    const handleClickOutside = (event) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setShowChartSettings(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showChartSettings]);
 
   const timeframeConfig = TIMEFRAMES.find((item) => item.label === timeframe);
 
@@ -104,7 +136,7 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
           color: "transparent",
         },
 
-        textColor: "var(--chart-text)",
+        textColor: "#e5e7eb",
         fontFamily: "Poppins, sans-serif",
       },
 
@@ -178,6 +210,56 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
       chartRef.current = null;
     };
   }, []);
+
+  // ==========================================
+  // CHART SETTINGS
+  // ==========================================
+
+  useEffect(() => {
+    const chart = chartRef.current;
+
+    if (!chart) return;
+
+    const rightPriceScale = chart.priceScale("right");
+
+    rightPriceScale.applyOptions({
+      mode: chartSettings.logScale
+        ? PriceScaleMode.Logarithmic
+        : chartSettings.scale === "percentage"
+          ? PriceScaleMode.Percentage
+          : PriceScaleMode.Normal,
+
+      autoScale: chartSettings.autoScale,
+    });
+
+    chart.applyOptions({
+      layout: {
+        background: {
+          type: ColorType.Solid,
+          color:
+            chartSettings.appearance === "dark" ? "transparent" : "#ffffff",
+        },
+
+        textColor: chartSettings.appearance === "dark" ? "#e5e7eb" : "#1f2937",
+      },
+
+      grid: {
+        vertLines: {
+          color:
+            chartSettings.appearance === "dark"
+              ? "rgba(148,163,184,0.08)"
+              : "rgba(15,23,42,0.08)",
+        },
+
+        horzLines: {
+          color:
+            chartSettings.appearance === "dark"
+              ? "rgba(148,163,184,0.08)"
+              : "rgba(15,23,42,0.08)",
+        },
+      },
+    });
+  }, [chartSettings]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -682,12 +764,13 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
   return (
     <section
       className="
-        overflow-hidden
-        rounded-xl
-        border
-        border-[var(--app-border)]
-        bg-[var(--app-card)]
-      "
+    relative
+    overflow-hidden
+    rounded-xl
+    border
+    border-[var(--app-border)]
+    bg-[var(--app-card)]
+  "
     >
       <ChartToolbar
         chartType={chartType}
@@ -704,11 +787,300 @@ const CoinMarketChart = ({ coin, currency = "usd" }) => {
           setShowCompareModal(true);
         }}
         onSettings={() => {
-          console.log("Chart settings clicked");
+          setShowChartSettings((prev) => !prev);
         }}
         onClearDrawings={() => drawingApi?.clear()}
         hasDrawings={Boolean(drawingApi?.drawings?.length)}
       />
+
+      {showChartSettings && (
+        <div
+          ref={settingsRef}
+          className="
+          absolute
+          right-4
+          top-[62px]
+          z-30
+          w-72
+          rounded-xl
+          border
+          border-[var(--app-border)]
+          bg-[var(--app-card)]
+          p-4
+          shadow-2xl
+        "
+        >
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-[var(--app-text)]">
+              Chart Settings
+            </h3>
+
+            <p className="mt-1 text-[11px] text-[var(--app-muted)]">
+              Customize how the chart is displayed.
+            </p>
+          </div>
+
+          {/* VOLUME */}
+
+          <div className="flex items-center justify-between border-b border-[var(--app-border)] py-3">
+            <div>
+              <p className="text-xs font-medium text-[var(--app-text)]">
+                Volume
+              </p>
+
+              <p className="text-[10px] text-[var(--app-muted)]">
+                Show volume bars
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowVolume((prev) => !prev)}
+              className={`
+          relative
+          h-5
+          w-9
+          rounded-full
+          transition
+          ${showVolume ? "bg-[var(--color-primary)]" : "bg-slate-600"}
+        `}
+            >
+              <span
+                className={`
+            absolute
+            top-0.5
+            h-4
+            w-4
+            rounded-full
+            bg-white
+            transition
+            ${showVolume ? "left-4" : "left-0.5"}
+          `}
+              />
+            </button>
+          </div>
+
+          {/* SCALE */}
+
+          <div className="border-b border-[var(--app-border)] py-3">
+            <p className="mb-2 text-xs font-medium text-[var(--app-text)]">
+              Price Scale
+            </p>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setChartSettings((prev) => ({
+                    ...prev,
+                    scale: "price",
+                    logScale: false,
+                  }))
+                }
+                className={`
+            rounded-lg
+            border
+            px-3
+            py-2
+            text-xs
+            transition
+            ${
+              chartSettings.scale === "price" && !chartSettings.logScale
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                : "border-[var(--app-border)] text-[var(--app-muted)]"
+            }
+          `}
+              >
+                Price
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setChartSettings((prev) => ({
+                    ...prev,
+                    scale: "percentage",
+                    logScale: false,
+                  }))
+                }
+                className={`
+            rounded-lg
+            border
+            px-3
+            py-2
+            text-xs
+            transition
+            ${
+              chartSettings.scale === "percentage" && !chartSettings.logScale
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                : "border-[var(--app-border)] text-[var(--app-muted)]"
+            }
+          `}
+              >
+                Percentage
+              </button>
+            </div>
+          </div>
+
+          {/* LOG SCALE */}
+
+          <div className="flex items-center justify-between border-b border-[var(--app-border)] py-3">
+            <div>
+              <p className="text-xs font-medium text-[var(--app-text)]">
+                Log Scale
+              </p>
+
+              <p className="text-[10px] text-[var(--app-muted)]">
+                Use logarithmic pricing
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setChartSettings((prev) => ({
+                  ...prev,
+                  logScale: !prev.logScale,
+                }))
+              }
+              className={`
+          relative
+          h-5
+          w-9
+          rounded-full
+          transition
+          ${
+            chartSettings.logScale
+              ? "bg-[var(--color-primary)]"
+              : "bg-slate-600"
+          }
+        `}
+            >
+              <span
+                className={`
+            absolute
+            top-0.5
+            h-4
+            w-4
+            rounded-full
+            bg-white
+            transition
+            ${chartSettings.logScale ? "left-4" : "left-0.5"}
+          `}
+              />
+            </button>
+          </div>
+
+          {/* AUTO SCALE */}
+
+          <div className="flex items-center justify-between border-b border-[var(--app-border)] py-3">
+            <div>
+              <p className="text-xs font-medium text-[var(--app-text)]">
+                Auto Scale
+              </p>
+
+              <p className="text-[10px] text-[var(--app-muted)]">
+                Automatically fit prices
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setChartSettings((prev) => ({
+                  ...prev,
+                  autoScale: !prev.autoScale,
+                }))
+              }
+              className={`
+          relative
+          h-5
+          w-9
+          rounded-full
+          transition
+          ${
+            chartSettings.autoScale
+              ? "bg-[var(--color-primary)]"
+              : "bg-slate-600"
+          }
+        `}
+            >
+              <span
+                className={`
+            absolute
+            top-0.5
+            h-4
+            w-4
+            rounded-full
+            bg-white
+            transition
+            ${chartSettings.autoScale ? "left-4" : "left-0.5"}
+          `}
+              />
+            </button>
+          </div>
+
+          {/* APPEARANCE */}
+
+          <div className="py-3">
+            <p className="mb-2 text-xs font-medium text-[var(--app-text)]">
+              Chart Appearance
+            </p>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setChartSettings((prev) => ({
+                    ...prev,
+                    appearance: "dark",
+                  }))
+                }
+                className={`
+            rounded-lg
+            border
+            px-3
+            py-2
+            text-xs
+            transition
+            ${
+              chartSettings.appearance === "dark"
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                : "border-[var(--app-border)] text-[var(--app-muted)]"
+            }
+          `}
+              >
+                Dark
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setChartSettings((prev) => ({
+                    ...prev,
+                    appearance: "light",
+                  }))
+                }
+                className={`
+            rounded-lg
+            border
+            px-3
+            py-2
+            text-xs
+            transition
+            ${
+              chartSettings.appearance === "light"
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                : "border-[var(--app-border)] text-[var(--app-muted)]"
+            }
+          `}
+              >
+                Light
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ======================================
           CHART
