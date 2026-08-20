@@ -13,6 +13,7 @@ import SimilarCoins from "../components/coin/SimilarCoins";
 import PortfolioExposure from "../components/coin/PortfolioExposure";
 
 import { getCoinDetails } from "../services/coinDetailsService";
+import { getTechnicalAnalysis } from "../services/coinChartService";
 import useCurrency from "../hooks/useCurrency";
 
 const CoinDetailsPage = () => {
@@ -22,6 +23,10 @@ const CoinDetailsPage = () => {
   const [coin, setCoin] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [technicalAnalysis, setTechnicalAnalysis] = useState(null);
+  const [technicalLoading, setTechnicalLoading] = useState(true);
+  const [technicalError, setTechnicalError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +62,46 @@ const CoinDetailsPage = () => {
       cancelled = true;
     };
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchTechnicalAnalysis = async () => {
+      try {
+        setTechnicalLoading(true);
+        setTechnicalError("");
+
+        const data = await getTechnicalAnalysis({
+          coinId: id,
+          currency: currency.toLowerCase(),
+        });
+
+        if (!cancelled) {
+          setTechnicalAnalysis(data);
+        }
+      } catch (err) {
+        console.error("[CoinDetailsPage] Technical Analysis:", err);
+
+        if (!cancelled) {
+          setTechnicalError(
+            err.message || "Failed to load technical analysis.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setTechnicalLoading(false);
+        }
+      }
+    };
+
+    if (id) {
+      fetchTechnicalAnalysis();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, currency]);
 
   /* =========================================
      LOADING
@@ -177,7 +222,12 @@ const CoinDetailsPage = () => {
 
               {/* Technical Analysis */}
 
-              <TechnicalAnalysis coin={coin} />
+              <TechnicalAnalysis
+                coin={coin}
+                analysis={technicalAnalysis}
+                loading={technicalLoading}
+                error={technicalError}
+              />
 
               {/* About + AI */}
 
